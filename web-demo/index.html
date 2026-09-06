@@ -212,11 +212,11 @@
                     <input type="color" id="inline-color-picker" value="#FFFFFF" class="color-input-hidden">
                   </label>
                   <div class="quick-swatches" id="quick-swatches">
-                    <button type="button" class="swatch-dot" data-color="#1C69D4" style="background: #1C69D4" title="BMW Corporate Blue"></button>
+                    <button type="button" class="swatch-dot" data-color="#1C69D4" style="background: #1C69D4" title="Primary Blue"></button>
                     <button type="button" class="swatch-dot" data-color="#FFFFFF" style="background: #FFFFFF" title="Canvas White"></button>
-                    <button type="button" class="swatch-dot" data-color="#262626" style="background: #262626" title="BMW Ink"></button>
-                    <button type="button" class="swatch-dot" data-color="#E22718" style="background: #E22718" title="BMW M Red"></button>
-                    <button type="button" class="swatch-dot" data-color="#0066B1" style="background: #0066B1" title="BMW M Blue Light"></button>
+                    <button type="button" class="swatch-dot" data-color="#262626" style="background: #262626" title="Dark Gray"></button>
+                    <button type="button" class="swatch-dot" data-color="#E22718" style="background: #E22718" title="Accent Red"></button>
+                    <button type="button" class="swatch-dot" data-color="#0066B1" style="background: #0066B1" title="Light Blue"></button>
                     <button type="button" class="swatch-dot" data-color="#F59E0B" style="background: #F59E0B" title="Warning Amber"></button>
                   </div>
                 </div>
@@ -240,6 +240,27 @@
 
               <!-- In-Place Editable Input -->
               <input type="text" id="inline-text-input" class="inline-text-input" autocomplete="off" spellcheck="false" />
+              <!-- Resize Handles -->
+              <div class="resize-handle handle-tl" data-dir="tl"></div>
+              <div class="resize-handle handle-tc" data-dir="tc"></div>
+              <div class="resize-handle handle-tr" data-dir="tr"></div>
+              <div class="resize-handle handle-ml" data-dir="ml"></div>
+              <div class="resize-handle handle-mr" data-dir="mr"></div>
+              <div class="resize-handle handle-bl" data-dir="bl"></div>
+              <div class="resize-handle handle-bc" data-dir="bc"></div>
+              <div class="resize-handle handle-br" data-dir="br"></div>
+              
+              <!-- Move handle -->
+              <div class="move-handle" data-dir="move">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="5 9 2 12 5 15"></polyline>
+                  <polyline points="9 5 12 2 15 5"></polyline>
+                  <polyline points="19 9 22 12 19 15"></polyline>
+                  <polyline points="9 19 12 22 15 19"></polyline>
+                  <line x1="2" y1="12" x2="22" y2="12"></line>
+                  <line x1="12" y1="2" x2="12" y2="22"></line>
+                </svg>
+              </div>
             </div>
             
             <!-- Scanning Laser Animation Overlay -->
