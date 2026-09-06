@@ -69,7 +69,7 @@ def export_paddle_to_onnx(model_dir: str, save_file: str, model_type: str = "det
 
 def main():
     parser = argparse.ArgumentParser(description="Export & Quantize PP-OCRv5 for Snapdragon NPU")
-    parser.add_argument("--output-dir", default="../app/src/main/assets/models", help="Target output directory")
+    parser.add_argument("--output-dir", default="./models", help="Target output directory")
     args = parser.parse_args()
 
     os.makedirs(args.output_dir, exist_ok=True)
