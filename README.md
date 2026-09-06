@@ -1,152 +1,222 @@
-# SnapText — Context-Preserving Document Text Editor 📱⚡
-> **100% Offline, NPU-Accelerated Native Android Image Text Editor**  
-> *Submitted for iQOO Hackathon 2026 · Chennai City Battle (Idea-Screening Stage)*
+# SnapText Pro — Context-Preserving Document & Typography Editor ⚡
 
-[![Platform](https://img.shields.io/badge/Platform-Android%20(Kotlin)-green.svg)](https://developer.android.com)
-[![Hardware](https://img.shields.io/badge/NPU-Snapdragon%20Hexagon-yellow.svg)](https://www.qualcomm.com/snapdragon)
-[![Privacy](https://img.shields.io/badge/Privacy-100%25%20Offline%20(Zero%20Internet)-brightgreen.svg)](#-privacy-guarantee)
-[![Inference](https://img.shields.io/badge/Runtime-ONNX%20Mobile%20NNAPI-blue.svg)](https://onnxruntime.ai)
+> **Cloud AI & Vision API Document Text Inpainter & Typography Replicator**  
+> Powered by **FastAPI**, **RapidOCR ONNX Runtime**, **Google Gemini 2.5 Flash Vision**, and **OpenCV Smart Glyph Inpainting**.
 
----
-
-## 📌 1. Executive Summary
-
-**The Problem:** Modifying text embedded in images (flyers, infographics, documents, restaurant menus, certificates) currently requires desktop software like Photoshop or cloud AI tools (e.g. Canva, Adobe Express). Cloud tools present **severe privacy risks** for confidential documents, rely on internet connectivity, introduce round-trip latency, and frequently hallucinate background textures.
-
-**The Solution:** **SnapText** is a 100% offline native Android application powered by on-device ML and computer vision. It detects text boxes in imported images via **PP-OCRv5 INT8 on Snapdragon Hexagon NPU**, lets the user edit specific text regions via typing or on-device speech, reconstructs the background locally using **OpenCV Telea Inpainting**, and re-renders new text seamlessly with match-sampled typography.
-
-**Privacy Guarantee:** Zero network calls. **No `INTERNET` permission** declared in `AndroidManifest.xml`.
+[![Backend](https://img.shields.io/badge/Backend-FastAPI%20%28Python%203.11%2B%29-009688.svg)](https://fastapi.tiangolo.com)
+[![OCR Engine](https://img.shields.io/badge/OCR-RapidOCR%20ONNX%20Runtime-blue.svg)](https://github.com/RapidAI/RapidOCR)
+[![Vision AI](https://img.shields.io/badge/Cloud%20AI-Google%20Gemini%202.5%20Flash-4285F4.svg)](https://ai.google.dev/)
+[![Computer Vision](https://img.shields.io/badge/Inpainting-OpenCV%20Telea%20%26%20Navier--Stokes-orange.svg)](https://opencv.org)
+[![Frontend](https://img.shields.io/badge/Frontend-HTML5%20%2F%20Canvas%20%2F%20Vanilla%20CSS%20%2F%20JS-F7DF1E.svg)](#-frontend-features)
 
 ---
 
-## 🌟 2. Key Features & PRD Scope Alignment
+## 📌 1. Project Overview
 
-### 2.1 Core Features (10/10 Shipped)
-1. **Import Image:** Android Photo Picker (`PickVisualMedia`) + Camera capture (`ACTION_IMAGE_CAPTURE`) with EXIF orientation correction.
-2. **Auto Text Detection:** PP-OCRv5 DBNet INT8 quantized tensor inference + dynamic contrast boundary candidate extraction.
-3. **Tap-to-Edit:** Bounding boxes highlighted on canvas; tap to open Material 3 editor bottom sheet.
-4. **Type or Speak Replacement Text:** Standard keyboard + on-device Android `SpeechRecognizer` (`EXTRA_PREFER_OFFLINE`).
-5. **Erase + Reconstruct Background:** OpenCV Android SDK `cv2.inpaint()` using Fast Marching Method (`INPAINT_TELEA`) with 4px dilation.
-6. **Re-render New Text:** Dynamic font sizing, baseline alignment, and perimeter ring K-means color sampling.
-7. **Multi-Edit per Session:** Sequential edits across multiple regions on the same session canvas.
-8. **Undo per Edit:** Immutable `EditHistoryManager` stack with unlimited step-by-step undo and redo.
-9. **Save / Export:** Scoped storage saving to Android MediaStore (`/Pictures/SnapText`) + native sharing (`ACTION_SEND`).
-10. **Visible Offline Proof:** Prominent top bar badge verifying `100% OFFLINE · ZERO NETWORK CALLS`.
+**SnapText Pro** is a full-stack document editing and typography replication suite designed to replace embedded text in images (flyers, posters, menus, certificates, and infographics) without disrupting background colors, gradients, textures, or surrounding graphics.
 
-### 2.2 Stretch Features (2/2 Shipped)
-1. **Before/After Compare Slider:** Draggable split slider (`BeforeAfterSlider.kt`) providing instant visual verification of pixel preservation.
-2. **Batch Mode:** Automated find-and-replace across multiple documents (`BatchEditDialog.kt`) without cloud upload.
+The system pairs a **FastAPI computer vision backend** with an **interactive browser application**:
+1. **Automated Text & Geometry Detection:** Uses **RapidOCR ONNX** (PP-OCRv4/v5) and optional **Google Gemini 2.5 Flash Vision** to detect text boundaries, polygons, and orientations (horizontal and vertical).
+2. **Deep Typography Profiling:** Analyzes cropped text patches using Otsu segmentation, distance transforms, and Hough line angle detection to extract the **exact text color**, **background color**, **font weight**, **font size**, **italic slant**, **casing**, and **Google Font family**.
+3. **Smart Background Inpainting:** Erases old text at the glyph level using OpenCV Telea (`cv2.INPAINT_TELEA`) and Navier-Stokes (`cv2.INPAINT_NS`) with feathered alpha boundary blending—completely eliminating rectangular black boxes or blurry artifacts.
+4. **Interactive In-Place Canvas Editor:** Users tap or drag over text to edit directly on the canvas with a floating typography toolbar, before/after split comparison slider, batch multi-edit mode, and camera import.
 
 ---
 
-## 🛠️ 3. Architecture & Technical Pipeline
+## 🌟 2. What Is Actually in This Repository
 
-```
-+-----------------------------------------------------------------------+
-|                           ANDROID USER INTERFACE                       |
-|        (Jetpack Compose · Material 3 · Interactive Touch Overlay)     |
-+------------------------------------+----------------------------------+
-                                     |
-                                     v
-+-----------------------------------------------------------------------+
-|                    DOCUMENT EDITOR VIEWMODEL / STATE                  |
-|    (Multi-Edit History Stack · Scoped Storage · Batch Progress State) |
-+---------------+--------------------+----------------------------------+
-                |                    |
-                v                    v
-+-------------------------------+  +------------------------------------+
-|   ONNX RUNTIME MOBILE (NNAPI) |  |        OPENCV ANDROID SDK          |
-|  PP-OCRv5 Mobile Det & Rec    |  | Telea Inpainting + Mask Dilation   |
-| (Snapdragon Hexagon NPU Offload) | (Fast Marching Method, <15ms)      |
-+---------------+---------------+  +----------------+-------------------+
-                |                                   |
-                +-----------------+-----------------+
-                                  |
-                                  v
-+-----------------------------------------------------------------------+
-|                      TEXT SYNTHESIS & RENDERER                        |
-|        (Color Sampling · Canvas Paint Engine · Typography Match)      |
-+-----------------------------------------------------------------------+
-```
-
-| Layer | Technology Choice | Rationale |
+| Directory / Component | Technology Stack | Key Responsibilities |
 |---|---|---|
-| **Platform** | Native Android (Kotlin) | Direct hardware access & lowest latency |
-| **UI Framework** | Jetpack Compose + Material 3 | Modern declarative reactive UI |
-| **Text Detection / Rec** | PaddleOCR Mobile (PP-OCRv5) | SOTA accuracy for mobile documents in ~4.2 MB |
-| **Model Quantization** | ONNX INT8 Quantization | 75% memory footprint reduction & fast tensor math |
-| **Inference Runtime** | ONNX Runtime Mobile + NNAPI EP | Direct offload to Qualcomm Hexagon NPU |
-| **Background Reconstruction** | OpenCV Android SDK (`INPAINT_TELEA`) | Real-time ($O(N \log N)$) offline texture reconstruction |
-| **Text Re-render** | Android `Canvas` & `Paint` | Hardware-accelerated native font metrics |
-| **Voice Input** | Android `SpeechRecognizer` | Offline speech-to-text without network |
-| **Network** | NONE | Absolute zero-network privacy guarantee |
+| [`backend/app.py`](backend/app.py) | **FastAPI, RapidOCR, OpenCV, NumPy, Google GenAI SDK** | REST API providing high-speed text detection, typography feature profiling, glyph inpainting, and cloud vision inference. |
+| [`web-demo/index.html`](web-demo/index.html) | **HTML5, Google Fonts, Semantic Web UI** | Main user interface with workspace controls, floating formatting popovers, comparison slider, and settings dialogs. |
+| [`web-demo/style.css`](web-demo/style.css) | **Modern Vanilla CSS (Custom Design System)** | Refined visual styling with soft 14px card radii, BMW Corporate palette (`#1c69d4`), glassmorphism toolbars, ambient shadows, and responsive layout. |
+| [`web-demo/app.js`](web-demo/app.js) | **Vanilla JavaScript, HTML5 Canvas API** | Canvas rendering engine, in-place text editor, interactive split slider, draw-to-edit tool, history undo/redo, and backend API integration. |
+| [`web-demo/sample_aws.png`](web-demo/sample_aws.png) | **Test Image / Benchmark** | The official AWS Builder Center flyer sample used for testing detection, font replication, and background inpainting. |
+| [`scripts/export_and_quantize_paddleocr.py`](scripts/export_and_quantize_paddleocr.py) | **Python, ONNX, PaddleOCR** | Model conversion and INT8 quantization utility for mobile/edge ONNX runtime deployment. |
 
 ---
 
-## 🚀 4. Repository Structure
+## 🛠️ 3. Technical Architecture & Pipeline
 
 ```
-IQOO Hackathon/
-├── app/
-│   ├── build.gradle.kts                # Android dependencies & ONNX/OpenCV config
-│   └── src/main/
-│       ├── AndroidManifest.xml          # Zero network manifest declaration + FileProvider
-│       ├── res/xml/file_paths.xml       # Scoped storage sharing paths
-│       └── java/com/iqoo/doceditor/
-│           ├── MainActivity.kt          # Main entry point & theme
-│           ├── data/model/
-│           │   ├── TextRegion.kt        # Bounding box & text metadata model
-│           │   └── EditHistory.kt       # Non-destructive undo stack
-│           ├── engine/
-│           │   ├── PaddleOcrEngine.kt   # ONNX Runtime + NNAPI interface + candidate extraction
-│           │   ├── OpenCvInpainter.kt   # OpenCV background reconstruction (INPAINT_TELEA)
-│           │   ├── TextCanvasRenderer.kt# Canvas text synthesis engine
-│           │   └── ColorSampler.kt      # Border pixel color extraction
-│           ├── ui/
-│           │   ├── screens/
-│           │   │   └── EditorScreen.kt  # Main editor screen with photo picker, camera, save/share
-│           │   ├── components/
-│           │   │   ├── InteractiveCanvas.kt    # Touch overlay with boxes
-│           │   │   ├── TextEditBottomSheet.kt  # Keyboard/Voice modal
-│           │   │   ├── BeforeAfterSlider.kt    # Comparison split slider
-│           │   │   ├── BatchEditDialog.kt      # Stretch Feature 2 Batch Mode modal
-│           │   │   └── OfflineBadge.kt         # Visual privacy proof
-│           │   ├── theme/
-│           │   │   ├── Color.kt
-│           │   │   └── Theme.kt
-│           │   └── viewmodel/
-│           │       └── DocumentEditorViewModel.kt # StateFlow & Scoped Storage manager
-├── scripts/
-│   └── export_and_quantize_paddleocr.py# Python INT8 model quantization pipeline
-├── web-demo/                            # Interactive Web Simulator for idea screening testing
-│   ├── index.html                       # High-aesthetic iQOO cyberpunk simulator
-│   ├── style.css                        # Glassmorphic dark styling & responsive grid
-│   └── app.js                           # Telea inpainting, templates & batch mode simulation
-├── ARCHITECTURE.md                      # Detailed technical architecture specification
-└── SUBMISSION_PITCH.md                  # Hackathon idea screening submission document
++-------------------------------------------------------------------------------+
+|                             INTERACTIVE WEB CLIENT                            |
+|    (Canvas 2D Engine · Direct In-Place Editor · Before/After Split Slider)     |
++---------------------------------------+---------------------------------------+
+                                        |
+                         HTTP / REST API Requests
+                                        |
+                                        v
++-------------------------------------------------------------------------------+
+|                           FASTAPI PYTHON BACKEND                              |
+|                       (Running at http://127.0.0.1:8000)                      |
++-------------------+-----------------------------------+-----------------------+
+                    |                                   |
+                    v                                   v
++---------------------------------------+  +------------------------------------+
+|         TEXT DETECTION ENGINE         |  |         INPAINTING ENGINE          |
+|  • RapidOCR ONNX (PP-OCRv4/v5)        |  |  • Smart Glyph Mask Extraction     |
+|  • Google Gemini 2.5 Flash Vision     |  |  • OpenCV Telea & Navier-Stokes    |
+|  • Polygons & Vertical Text Handlers  |  |  • Feathered Boundary Alpha Blend  |
++-------------------+-------------------+  +------------------+-----------------+
+                    |                                     |
+                    v                                     |
++---------------------------------------+                 |
+|     DEEP TYPOGRAPHY & FONT PROFILER   |                 |
+|  • Otsu Binarization Ink Segmentation |                 |
+|  • Median Hex Foreground & BG Color   |                 |
+|  • Stroke Width Transform (Font Weight|                 |
+|  • Hough Slant Analysis (Italics)     |                 |
+|  • Google Font Matching               |                 |
++-------------------+-------------------+                 |
+                    |                                     |
+                    +------------------+------------------+
+                                       |
+                                       v
++-------------------------------------------------------------------------------+
+|                      CANVAS TEXT RE-SYNTHESIS ENGINE                          |
+|        (Dynamic Google Fonts · Scaled Baseline Fit · Text Alignment)          |
++-------------------------------------------------------------------------------+
 ```
 
 ---
 
-## ⚡ 5. Testing & Quick Demonstration
+## 🚀 4. API Endpoints Reference
 
-### Option A: Interactive Web Simulator (Instant Browser Test)
-Judges and evaluators can test the complete user flow immediately in any web browser without building the APK:
-1. Open `web-demo/index.html` in Chrome/Edge/Firefox.
-2. Select any template ("iQOO Battle Flyer", "Bistro Menu", "NPU Infographic", "Certificate") or import an image / capture camera.
-3. Tap any highlighted text box to open the editor.
-4. Type or speak replacement text and click **Apply & Reconstruct**.
-5. Test the **Before/After Split Slider** and **Batch Multi-Edit Mode**!
+The FastAPI backend exposes the following REST endpoints:
 
-### Option B: Android Studio Project Build
-1. Open the repository root in Android Studio (Giraffe or newer).
-2. Sync Gradle dependencies (pre-configured with Gradle 8.2 wrapper and Kotlin 1.9.22).
-3. Connect an Android device (e.g. iQOO 12, Neo 9 Pro, or Snapdragon emulator) and click **Run**.
+### `GET /api/health`
+Health check verifying vision engine and inpainting readiness.
+- **Response:**
+  ```json
+  {
+    "status": "online",
+    "engine": "RapidOCR ONNX & Gemini Vision Ready",
+    "network": "Cloud Connected (Online Mode)",
+    "inpainting": "Smart Glyph-Level Telea & Navier-Stokes Inpainting"
+  }
+  ```
+
+### `POST /api/detect`
+Performs OCR detection and full typography extraction on an uploaded image.
+- **Form Data:** `file` (Image binary: PNG, JPEG, WEBP)
+- **Response:**
+  ```json
+  {
+    "count": 14,
+    "latency_ms": 24.5,
+    "regions": [
+      {
+        "id": "cloud_1",
+        "box": { "x": 497, "y": 365, "w": 96, "h": 58 },
+        "text": "Build",
+        "score": 0.985,
+        "textColor": "#0f172a",
+        "bgColor": "#93c5fd",
+        "fontSize": 45,
+        "fontWeight": "900",
+        "fontStyle": "normal",
+        "fontFamily": "Montserrat",
+        "fontCategory": "sans-serif",
+        "alignment": "center",
+        "isUppercase": false,
+        "isVertical": false,
+        "letterSpacing": 0.0
+      }
+    ]
+  }
+  ```
+
+### `POST /api/inpaint`
+Erases old text and reconstructs background texture at the glyph level.
+- **Form Data:**
+  - `file`: Image binary
+  - `x`, `y`, `w`, `h`: Bounding box coordinates
+  - `method`: Inpainting mode (`telea` or `ns`)
+- **Response:** Streamed PNG image patch with bounding box coordinates in `X-Patch-X`, `X-Patch-Y`, `X-Patch-W`, `X-Patch-H` response headers.
+
+### `POST /api/gemini-detect`
+Alternative multimodal cloud AI vision endpoint powered by Google Gemini 2.5 Flash.
+- **Form Data:** `file` (Image binary), `api_key` (Optional if passed via `X-Api-Key` header)
+- **Response:** Semantic text regions with detected typography and coordinates.
 
 ---
 
-## 🛡️ 6. Privacy & Compliance Audit
+## 🎨 5. Key Frontend Features
 
-- **No INTERNET Permission:** Manifest verified. No network sockets or external telemetry.
-- **On-Device Data Boundary:** Image bitmaps remain in local application memory and scoped storage.
-- **Microphone Access:** Used exclusively via Android's local on-device `SpeechRecognizer` (`EXTRA_PREFER_OFFLINE`).
+1. **Preset Document Templates & Custom Uploads:**
+   - **AWS Builder Center Flyer** (`sample_aws.png`) — Official benchmark image.
+   - **iQOO Battle 2026 Flyer** — Dark-mode esports flyer.
+   - **Bistro Menu & Pricing** — Complex restaurant layout with prices and items.
+   - **Snapdragon NPU Infographic** — Technical metrics and data points.
+   - **Tech Summit Certificate** — Formal certificate with serif & script typography.
+   - **Custom Image Upload & Camera Capture** — Test with any real-world image.
+
+2. **Context-Preserving Inline Canvas Editor:**
+   - Click any highlighted bounding box on the document to open the in-place editor.
+   - The floating typography toolbar lets you fine-tune font family, font size, weight (`Reg`, `Semi`, `Bold`, `Black`), color picker + swatches, alignment, italic toggle, and uppercase transform.
+
+3. **Draw-to-Edit Mode (Custom Bounding Box):**
+   - Click **✏️ Draw Box to Edit** to drag a selection box over any arbitrary text in the image. The backend automatically extracts the text, analyzes font styling, inpaints the background, and lets you retype.
+
+4. **Before / After Comparison Split View:**
+   - Toggle **↔ Before / After Split** to swipe an interactive divider across the canvas, comparing original pixels (left) against the reconstructed typography (right).
+
+5. **Multi-Document Batch Replacement:**
+   - Apply find-and-replace rules across multiple templates simultaneously without cloud re-uploading.
+
+6. **History & Scoped State:**
+   - Unlimited step-by-step **Undo** (`Ctrl+Z`) and **Redo** (`Ctrl+Y`), image reset, and high-resolution PNG export.
+
+---
+
+## 💻 6. How to Run Locally
+
+### Prerequisites
+- Python 3.10, 3.11, or 3.12
+- Node.js or Python `http.server` to serve the static frontend
+
+### Step 1: Start the Python FastAPI Backend
+```bash
+# Navigate to repository root
+cd "backend"
+
+# Activate the virtual environment
+# Windows:
+.\venv\Scripts\activate
+# Linux / macOS:
+# source venv/bin/activate
+
+# Install dependencies if not already installed
+pip install -r requirements.txt
+# (Key packages: fastapi, uvicorn, rapidocr-onnxruntime, opencv-python, numpy, google-genai)
+
+# Start the uvicorn server
+python -m uvicorn app:app --host 127.0.0.1 --port 8000
+```
+*The backend will start at `http://127.0.0.1:8000`.*
+
+### Step 2: Serve the Frontend Web Application
+In a separate terminal:
+```bash
+# Serve the web-demo folder on port 3000
+python -m http.server 3000 --directory web-demo
+```
+
+### Step 3: Open in Browser
+Open your browser and navigate to:
+```
+http://localhost:3000/
+```
+The application will automatically load the AWS Builder Center Flyer, run text detection through the local backend, and display interactive bounding boxes ready for instant editing.
+
+---
+
+## ⚙️ 7. Optional Cloud AI Integration (Google Gemini)
+
+To enable deep multimodal document understanding via Google Gemini 2.5 Flash:
+1. Click **⚙️ Engine: RapidOCR & Cloud Vision** in the top navigation bar.
+2. Select **Google Gemini 2.5 Flash Vision (Cloud AI)**.
+3. Enter your Gemini API key (from Google AI Studio).
+4. Click **Save Settings**.
+5. Subsequent image analyses will run through Gemini Vision while background inpainting remains accelerated by OpenCV.
