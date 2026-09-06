@@ -45,7 +45,7 @@ def extract_typography(img: np.ndarray, x: int, y: int, w: int, h: int, text: st
         return {
             "textColor": "#FFFFFF",
             "bgColor": "#121212",
-            "fontSize": max(14, int(w * 0.78)) if is_vertical else max(12, int(h * 0.76)),
+            "fontSize": max(14, int(w * 1.15)) if is_vertical else max(12, int(h * 1.15)),
             "fontWeight": "700",
             "fontFamily": "Inter",
             "fontCategory": "sans-serif",
@@ -110,29 +110,33 @@ def extract_typography(img: np.ndarray, x: int, y: int, w: int, h: int, text: st
     if is_vertical:
         font_weight = "900" if stroke_ratio > 0.08 or ink_density > 0.35 else "700"
     elif h > 40: # Headline / Title
-        if stroke_ratio > 0.095 or ink_density > 0.44:
+        if stroke_ratio > 0.12 or ink_density > 0.50:
             font_weight = "900"
-        elif stroke_ratio > 0.07 or ink_density > 0.32:
+        elif stroke_ratio > 0.085 or ink_density > 0.38:
             font_weight = "700"
-        elif stroke_ratio > 0.05 or ink_density > 0.24:
-            font_weight = "600"
-        else:
-            font_weight = "400"
-    else: # Small / Body text or pill badge
-        if ink_density > 0.45 or (text_is_upper and len(text) <= 8 and ink_density > 0.35):
-            font_weight = "900" # Pill titles like LEARN, CONNECT, BUILD, ACHIEVE
-        elif ink_density > 0.33:
-            font_weight = "700"
-        elif ink_density > 0.22:
+        elif stroke_ratio > 0.06 or ink_density > 0.28:
             font_weight = "500"
-        else:
+        elif stroke_ratio > 0.04 or ink_density > 0.18:
             font_weight = "400"
+        else:
+            font_weight = "300"
+    else: # Small / Body text or pill badge
+        if ink_density > 0.55 or (text_is_upper and len(text) <= 8 and ink_density > 0.45):
+            font_weight = "900" # Pill titles like LEARN, CONNECT, BUILD, ACHIEVE
+        elif ink_density > 0.40:
+            font_weight = "700"
+        elif ink_density > 0.28:
+            font_weight = "500"
+        elif ink_density > 0.18:
+            font_weight = "400"
+        else:
+            font_weight = "300"
 
     # Font size
     if is_vertical:
-        font_size = max(14, int(w * 0.78))
+        font_size = max(14, int(w * 1.15))
     else:
-        font_size = max(12, int(h * 0.78))
+        font_size = max(12, int(h * 1.15))
 
     # Font Category and Google Font recommendation
     char_len = max(1, len(text.strip()))
@@ -140,7 +144,7 @@ def extract_typography(img: np.ndarray, x: int, y: int, w: int, h: int, text: st
     text_lower = text.lower()
 
     # 1. Monospace check: uniform pitch, code/tech branding
-    if ('builder center' in text_lower and y < 100) or (char_aspect > 0.58 and font_weight in ('400', '500') and not is_vertical):
+    if char_aspect >= 0.52 and not is_vertical:
         font_family = "JetBrains Mono"
         font_category = "monospace"
         letter_spacing = 1.0
@@ -250,6 +254,8 @@ async def detect_text(file: UploadFile = File(...)):
         for idx, line in enumerate(ocr_results):
             poly = line[0]       # [[x1,y1],[x2,y2],[x3,y3],[x4,y4]]
             text = str(line[1]).strip()
+            
+
             score = float(line[2])
 
             if not text:
@@ -467,7 +473,7 @@ async def gemini_detect(
             h = int(((ymax - ymin) / 1000.0) * img_h)
 
             is_vertical = h > (w * 2.2)
-            fontSize = max(14, int(w * 0.78)) if is_vertical else max(12, int(h * 0.78))
+            fontSize = max(14, int(w * 1.15)) if is_vertical else max(12, int(h * 1.15))
 
             regions.append({
                 "id": f"gemini_{idx + 1}",

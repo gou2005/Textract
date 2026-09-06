@@ -1,0 +1,21 @@
+# Bytecode / caches
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Virtual envs
+venv/
+.env
+
+# Node / frontend
+node_modules/
+/dist/
+
+# VS Code / IDE settings
+.vscode/
+.idea/
+
+# OS junk
+Thumbs.db
+.DS_Store

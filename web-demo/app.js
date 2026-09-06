@@ -239,6 +239,87 @@ class SnapTextSimulator {
       e.stopPropagation();
       this.closeInlineEditing();
     });
+
+    // Manual Bounding Box Resizer and Mover
+    this.inlineEditor.addEventListener('mousedown', (e) => {
+      if (!this.selectedRegion) return;
+      
+      const target = e.target.closest('.resize-handle, .move-handle');
+      if (!target) return;
+
+      e.stopPropagation();
+      e.preventDefault();
+
+      const isMove = target.classList.contains('move-handle');
+      const dir = target.getAttribute('data-dir');
+      
+      const startX = e.clientX;
+      const startY = e.clientY;
+      
+      const rect = this.inlineEditor.getBoundingClientRect();
+      const startW = rect.width;
+      const startH = rect.height;
+      
+      const canvasRect = this.canvas.getBoundingClientRect();
+      const scaleX = this.canvas.width / canvasRect.width;
+      const scaleY = this.canvas.height / canvasRect.height;
+      
+      const startBoxX = this.selectedRegion.box.x;
+      const startBoxY = this.selectedRegion.box.y;
+      const startBoxW = this.selectedRegion.box.w;
+      const startBoxH = this.selectedRegion.box.h;
+
+      const onMouseMove = (moveEvent) => {
+        const dx = moveEvent.clientX - startX;
+        const dy = moveEvent.clientY - startY;
+        
+        let newBoxX = startBoxX;
+        let newBoxY = startBoxY;
+        let newBoxW = startBoxW;
+        let newBoxH = startBoxH;
+
+        if (isMove) {
+          newBoxX = startBoxX + (dx * scaleX);
+          newBoxY = startBoxY + (dy * scaleY);
+        } else {
+          const scaledDx = dx * scaleX;
+          const scaledDy = dy * scaleY;
+          
+          if (dir.includes('l')) { newBoxX = startBoxX + scaledDx; newBoxW = startBoxW - scaledDx; }
+          if (dir.includes('r')) { newBoxW = startBoxW + scaledDx; }
+          if (dir.includes('t')) { newBoxY = startBoxY + scaledDy; newBoxH = startBoxH - scaledDy; }
+          if (dir.includes('b')) { newBoxH = startBoxH + scaledDy; }
+        }
+
+        // Constraints
+        newBoxW = Math.max(10, newBoxW);
+        newBoxH = Math.max(10, newBoxH);
+
+        this.selectedRegion.box = { x: newBoxX, y: newBoxY, w: newBoxW, h: newBoxH };
+
+        // Update DOM inlineEditor immediately
+        this.inlineEditor.style.left = `${(newBoxX / this.canvas.width) * 100}%`;
+        this.inlineEditor.style.top = `${(newBoxY / this.canvas.height) * 100}%`;
+        this.inlineEditor.style.width = `${(newBoxW / this.canvas.width) * 100}%`;
+        this.inlineEditor.style.height = `${(newBoxH / this.canvas.height) * 100}%`;
+        
+        if (!isMove) {
+          const isVert = this.selectedRegion.isVertical;
+          const newFontSize = Math.max(12, Math.round((isVert ? newBoxW : newBoxH) * 1.15));
+          this.fontSizeDisplay.textContent = `${newFontSize}px`;
+          this.inlineInput.style.fontSize = `${newFontSize}px`;
+        }
+      };
+
+      const onMouseUp = () => {
+        window.removeEventListener('mousemove', onMouseMove);
+        window.removeEventListener('mouseup', onMouseUp);
+        this.inlineInput.focus();
+      };
+
+      window.addEventListener('mousemove', onMouseMove);
+      window.addEventListener('mouseup', onMouseUp);
+    });
   }
 
   initEngineSettings() {
@@ -399,10 +480,11 @@ class SnapTextSimulator {
         const newRegion = {
           id: `custom_${Date.now().toString().slice(-4)}`,
           box: box,
+          originalBox: { ...box },
           text: extractedText,
           textColor: colors.fg,
           bgColor: colors.bg,
-          fontSize: Math.max(12, Math.round(box.h * 0.78)),
+          fontSize: Math.max(12, Math.round(box.h * 1.15)),
           fontWeight: '700',
           fontFamily: 'Montserrat',
           alignment: 'center',
@@ -935,6 +1017,7 @@ class SnapTextSimulator {
       
       this.textRegions = data.regions.map(r => ({
         ...r,
+        originalBox: { ...r.box },
         isEdited: false
       }));
 
@@ -994,10 +1077,11 @@ class SnapTextSimulator {
               const region = {
                 id: `ocr_${idx + 1}`,
                 box: box,
+                originalBox: { ...box },
                 text: text,
                 textColor: colors.fg,
                 bgColor: colors.bg,
-                fontSize: Math.max(12, Math.round(box.h * 0.78)),
+                fontSize: Math.max(12, Math.round(box.h * 1.15)),
                 fontWeight: '700',
                 fontFamily: 'Montserrat',
                 alignment: 'center',
@@ -1108,17 +1192,20 @@ class SnapTextSimulator {
 
     const inkRatio = total > 0 ? ink / total : 0.25;
 
-    if (inkRatio > 0.38) {
+    if (inkRatio > 0.45) {
       region.fontWeight = '900';
-      region.fontFamily = 'Anton';
-    } else if (inkRatio > 0.28) {
-      region.fontWeight = '800';
-      region.fontFamily = 'Oswald';
-    } else if (inkRatio > 0.20) {
+      region.fontFamily = 'Montserrat';
+    } else if (inkRatio > 0.35) {
       region.fontWeight = '700';
       region.fontFamily = 'Montserrat';
-    } else {
+    } else if (inkRatio > 0.25) {
+      region.fontWeight = '500';
+      region.fontFamily = 'Inter';
+    } else if (inkRatio > 0.15) {
       region.fontWeight = '400';
+      region.fontFamily = 'Inter';
+    } else {
+      region.fontWeight = '300';
       region.fontFamily = 'Inter';
     }
 
@@ -1212,7 +1299,7 @@ class SnapTextSimulator {
     }
     this.loadGoogleFont(family, region.fontWeight || '700');
 
-    const naturalFontSize = region.fontSize || Math.max(12, Math.round(box.h * 0.78));
+    const naturalFontSize = region.fontSize || Math.max(12, Math.round(box.h * 1.15));
     this.fontSizeDisplay.textContent = `${naturalFontSize}px`;
 
     const weight = String(region.fontWeight || '700');
@@ -1320,13 +1407,14 @@ class SnapTextSimulator {
           origCtx.drawImage(this.canvas, 0, 0);
         }
         
+        const inpaintBox = this.selectedRegion.originalBox || box;
         const blob = await new Promise(resolve => origCanvas.toBlob(resolve, 'image/png'));
         const formData = new FormData();
         formData.append('file', blob, 'image.png');
-        formData.append('x', Math.floor(box.x));
-        formData.append('y', Math.floor(box.y));
-        formData.append('w', Math.ceil(box.w));
-        formData.append('h', Math.ceil(box.h));
+        formData.append('x', Math.floor(inpaintBox.x));
+        formData.append('y', Math.floor(inpaintBox.y));
+        formData.append('w', Math.ceil(inpaintBox.w));
+        formData.append('h', Math.ceil(inpaintBox.h));
 
         const response = await fetch('http://localhost:8000/api/inpaint', {
           method: 'POST',
@@ -1349,7 +1437,8 @@ class SnapTextSimulator {
 
       // If backend inpainting failed or offline, use our seamless gradient client inpainter (NEVER a black box!)
       if (!inpaintSuccess) {
-        this.inpaintRegionClientSide(box);
+        const inpaintBox = this.selectedRegion.originalBox || box;
+        this.inpaintRegionClientSide(inpaintBox);
         this.cleanBackgroundData = this.ctx.getImageData(0, 0, cw, ch);
       }
 
@@ -1435,7 +1524,7 @@ class SnapTextSimulator {
     const weight = r.fontWeight || '700';
     const fontStyle = r.fontStyle === 'italic' ? 'italic ' : '';
     const isVertical = r.isVertical || (box.h > box.w * 2.2);
-    let fontSize = r.fontSize || Math.max(12, Math.round((isVertical ? box.w : box.h) * 0.78));
+    let fontSize = r.fontSize || Math.max(12, Math.round((isVertical ? box.w : box.h) * 1.15));
 
     const textToRender = r.isUppercase ? r.text.toUpperCase() : r.text;
 
@@ -1456,12 +1545,24 @@ class SnapTextSimulator {
     this.ctx.fillStyle = r.textColor || '#FFFFFF';
     this.ctx.textBaseline = 'middle';
 
-    // Auto-fit text size if new text exceeds original bounding box width
+    // Auto-fit text width perfectly to the bounding box
     let measured = this.ctx.measureText(textToRender).width;
-    const maxAllowedWidth = box.w * 0.98;
-    if (measured > maxAllowedWidth && measured > 0) {
-      fontSize = Math.max(9, fontSize * (maxAllowedWidth / measured));
+    const targetWidth = box.w * 0.98;
+    
+    // Reset letterSpacing before doing anything
+    this.ctx.letterSpacing = '0px';
+
+    if (measured > targetWidth && measured > 0) {
+      // Downscale if too wide
+      fontSize = Math.max(9, fontSize * (targetWidth / measured));
       this.ctx.font = `${fontStyle}${weight} ${fontSize}px "${family}", sans-serif`;
+    } else if (measured < targetWidth && textToRender.length > 1 && !isVertical) {
+      // Upscale letter spacing if too narrow (mimics original wide-tracked fonts exactly)
+      const extraSpace = targetWidth - measured;
+      const spacingPerChar = extraSpace / textToRender.length;
+      if (spacingPerChar > 0 && spacingPerChar < 25) {
+        this.ctx.letterSpacing = `${spacingPerChar}px`;
+      }
     }
 
     const alignment = r.alignment || 'center';
@@ -1515,7 +1616,13 @@ class SnapTextSimulator {
       this.ctx.putImageData(this.originalBitmapData, 0, 0);
       this.undoStack = [this.undoStack[0]];
       this.redoStack = [];
-      this.textRegions.forEach(r => { r.isEdited = false; });
+      // Reset each region to its original geometry and clear edit flag
+      this.textRegions.forEach(r => {
+        r.isEdited = false;
+        if (r.originalBox) {
+          r.box = { ...r.originalBox };
+        }
+      });
       this.renderOverlays();
       this.renderRegionsList();
       this.updateControlsState();
