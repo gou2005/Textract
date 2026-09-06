@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SnapText Pro — AI Context-Preserving Document & Typography Editor</title>
+  <meta name="description" content="Cloud AI & ONNX accelerated document text editor with RapidOCR, Google Gemini Vision, and smart background inpainting.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&family=Merriweather:wght@400;700;900&family=Montserrat:wght@300;400;500;600;700;800;900&family=Oswald:wght@400;500;600;700&family=Outfit:wght@300;400;500;600;700;800;900&family=Pacifico&family=Playfair+Display:ital,wght@0,400;0,600;0,700;0,900;1,400&family=Poppins:wght@400;500;600;700;800;900&family=Roboto:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="app-container">
+    <!-- Top Navigation Header -->
+    <header class="header">
+      <div class="brand">
+        <div class="logo-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="2" x2="12" y2="22"></line><line x1="2" y1="12" x2="22" y2="12"></line></svg>
+        </div>
+        <div class="brand-text">
+          <h1>SnapText Pro <span class="badge-bmw">Corporate Suite</span></h1>
+          <p>Context-Preserving Document & Typography Engine · Online Cloud AI</p>
+        </div>
+      </div>
+      <div class="header-actions">
+        <button id="btn-engine-settings" class="btn btn-secondary btn-sm" title="Configure AI & OCR Engine">
+          <span>⚙️ Engine: <strong id="current-engine-label">RapidOCR & Cloud Vision</strong></span>
+        </button>
+        <div class="privacy-badge" id="net-badge">
+          <span class="pulse-dot"></span>
+          <span id="net-badge-text">ONLINE · CONNECTED</span>
+        </div>
+      </div>
+    </header>
+    <div class="m-stripe-divider"></div>
+
+    <!-- Main Workspace Grid -->
+    <main class="workspace">
+      <!-- Left Controls Panel -->
+      <aside class="panel left-panel">
+        <div class="panel-card">
+          <h2>📷 Document Input Source</h2>
+          <p class="section-desc">Select an interactive template, import an image, or capture via camera to test local OCR & background reconstruction.</p>
+          
+          <div class="form-group template-group">
+            <label for="template-select">Preset Document Template:</label>
+            <select id="template-select" class="select-input">
+              <option value="aws_sample" selected>🚀 AWS Builder Center Flyer (Sample Image)</option>
+              <option value="poster">⚡ iQOO Battle 2026 Flyer</option>
+              <option value="menu">🍔 Bistro Menu & Pricing</option>
+              <option value="infographic">📊 Snapdragon NPU Infographic</option>
+              <option value="certificate">🎓 Tech Summit Certificate</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="ocr-granularity-select">OCR Detection Sensitivity:</label>
+            <select id="ocr-granularity-select" class="select-input">
+              <option value="all" selected>🎯 High Sensitivity (All Text & Details)</option>
+              <option value="lines">📄 Balanced Text Lines</option>
+              <option value="words">🔤 Exact Words</option>
+            </select>
+          </div>
+
+          <div class="btn-group">
+            <label class="btn btn-primary file-label">
+              <span>📁 Import Custom Image</span>
+              <input type="file" id="file-input" accept="image/*" class="hidden-input">
+            </label>
+            <button id="btn-camera-capture" class="btn btn-secondary">
+              <span>📷 Capture Photo</span>
+            </button>
+            <button id="btn-open-batch" class="btn btn-secondary">
+              <span>⚡ Batch Multi-Edit Mode</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="panel-card">
+          <h2>⚙️ Vision & OCR Pipeline Metrics</h2>
+          <div class="status-list">
+            <div class="status-item">
+              <span class="label">Text Detection:</span>
+              <span class="valueHighlight" id="metric-detection">RapidOCR ONNX & Gemini Vision</span>
+            </div>
+            <div class="status-item">
+              <span class="label">Recognition:</span>
+              <span class="valueHighlight">SVTR / LCNet / Transformer</span>
+            </div>
+            <div class="status-item">
+              <span class="label">Hardware Acceleration:</span>
+              <span class="valueHighlight" id="metric-hardware">NPU & GPU Cloud Pipeline</span>
+            </div>
+            <div class="status-item">
+              <span class="label">Inpainting Engine:</span>
+              <span class="valueHighlight">OpenCV Telea & Navier-Stokes (Smart Glyph)</span>
+            </div>
+            <div class="status-item">
+              <span class="label">Typography Extractor:</span>
+              <span class="valueHighlight accent-green">Otsu + Distance Transform Profiler</span>
+            </div>
+            <div class="status-item">
+              <span class="label">Detection Latency:</span>
+              <span class="valueHighlight accent-yellow" id="latency-val">~22 ms</span>
+            </div>
+            <div class="status-item">
+              <span class="label">Inpainting Time:</span>
+              <span class="valueHighlight accent-green" id="inpaint-latency">~12 ms</span>
+            </div>
+            <div class="status-item">
+              <span class="label">Network Status:</span>
+              <span class="valueHighlight accent-green" id="metric-network">🌐 ONLINE (Connected to APIs)</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel-card">
+          <div class="card-title-row">
+            <h2>🔍 Detected Regions</h2>
+            <span id="region-count-badge" class="counter-badge">0</span>
+          </div>
+          <div id="regions-list" class="regions-list">
+            <p class="empty-state">No document loaded yet.</p>
+          </div>
+        </div>
+      </aside>
+
+      <!-- Center Viewer Area -->
+      <section class="viewer-section">
+        <div class="toolbar">
+          <div class="toolbar-left">
+            <button id="btn-undo" class="btn btn-icon" title="Undo Edit (Ctrl+Z)" disabled>
+              <span>↩ Undo</span>
+            </button>
+            <button id="btn-redo" class="btn btn-icon" title="Redo Edit (Ctrl+Y)" disabled>
+              <span>↪ Redo</span>
+            </button>
+            <span class="divider"></span>
+            <button id="btn-draw-mode" class="btn btn-icon" title="Draw Box: Drag over any text to select & edit">
+              <span id="draw-mode-text">✏️ Draw Box to Edit</span>
+            </button>
+            <button id="btn-compare" class="btn btn-toggle" title="Toggle Before/After Compare Split View">
+              <span id="compare-text">↔ Before / After Split</span>
+            </button>
+            <span class="divider"></span>
+            <button id="btn-reset-original" class="btn btn-icon" title="Reset Image to Initial">
+              <span>🔄 Reset</span>
+            </button>
+          </div>
+          <div class="toolbar-right">
+            <div class="zoom-controls">
+              <button id="btn-zoom-out" class="btn-tool" title="Zoom Out">-</button>
+              <span id="zoom-level" class="zoom-text">100%</span>
+              <button id="btn-zoom-in" class="btn-tool" title="Zoom In">+</button>
+            </div>
+            <button id="btn-export" class="btn btn-accent" disabled>
+              <span>💾 Save / Export Image</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="helper-hint">
+          <span class="hint-icon">⚡</span>
+          <span><strong>Click any text box</strong> on the flyer to open the instant inline editor! The exact font, color, weight, and size will automatically match.</span>
+        </div>
+
+        <!-- Canvas Container -->
+        <div class="canvas-wrapper" id="canvas-wrapper">
+          <div id="canvas-container" class="canvas-container">
+            <canvas id="doc-canvas"></canvas>
+            <div id="box-overlays" class="box-overlays"></div>
+            <div id="draw-selection-box" class="draw-selection-box hidden"></div>
+
+            <!-- Direct Inline Canvas Text Editor with Rich Floating Formatting Bar -->
+            <div id="inline-text-editor" class="inline-text-editor hidden">
+              <!-- Floating Formatting Bar -->
+              <div class="formatting-toolbar" id="formatting-toolbar">
+                <div class="fmt-group font-family-group">
+                  <select id="inline-font-selector" class="fmt-select" title="Font Family">
+                    <option value="Anton">Anton (Heavy Banner)</option>
+                    <option value="Oswald">Oswald (Condensed)</option>
+                    <option value="Montserrat">Montserrat (Geometric)</option>
+                    <option value="Outfit">Outfit (Clean Modern)</option>
+                    <option value="Inter">Inter (Precision)</option>
+                    <option value="Roboto">Roboto (Neutral)</option>
+                    <option value="Poppins">Poppins (Rounded)</option>
+                    <option value="Playfair Display">Playfair Display (Serif)</option>
+                    <option value="Merriweather">Merriweather (Editorial)</option>
+                    <option value="JetBrains Mono">JetBrains Mono (Code)</option>
+                    <option value="Pacifico">Pacifico (Script)</option>
+                    <option value="sans-serif">System Sans</option>
+                  </select>
+                </div>
+
+                <div class="fmt-group font-size-group">
+                  <button type="button" id="btn-font-dec" class="fmt-btn" title="Decrease Font Size">-</button>
+                  <span id="font-size-display" class="fmt-val" title="Font Size in Pixels">24px</span>
+                  <button type="button" id="btn-font-inc" class="fmt-btn" title="Increase Font Size">+</button>
+                </div>
+
+                <div class="fmt-group font-weight-group">
+                  <button type="button" id="btn-weight-400" class="fmt-btn" data-weight="400" title="Regular (400)">Reg</button>
+                  <button type="button" id="btn-weight-600" class="fmt-btn" data-weight="600" title="SemiBold (600)">Semi</button>
+                  <button type="button" id="btn-weight-700" class="fmt-btn active" data-weight="700" title="Bold (700)">Bold</button>
+                  <button type="button" id="btn-weight-900" class="fmt-btn" data-weight="900" title="Heavy / Black (900)">Black</button>
+                </div>
+
+                <div class="fmt-group color-group">
+                  <label class="color-picker-label" title="Custom Text Color">
+                    <span class="color-preview" id="color-preview-circle"></span>
+                    <input type="color" id="inline-color-picker" value="#FFFFFF" class="color-input-hidden">
+                  </label>
+                  <div class="quick-swatches" id="quick-swatches">
+                    <button type="button" class="swatch-dot" data-color="#1C69D4" style="background: #1C69D4" title="BMW Corporate Blue"></button>
+                    <button type="button" class="swatch-dot" data-color="#FFFFFF" style="background: #FFFFFF" title="Canvas White"></button>
+                    <button type="button" class="swatch-dot" data-color="#262626" style="background: #262626" title="BMW Ink"></button>
+                    <button type="button" class="swatch-dot" data-color="#E22718" style="background: #E22718" title="BMW M Red"></button>
+                    <button type="button" class="swatch-dot" data-color="#0066B1" style="background: #0066B1" title="BMW M Blue Light"></button>
+                    <button type="button" class="swatch-dot" data-color="#F59E0B" style="background: #F59E0B" title="Warning Amber"></button>
+                  </div>
+                </div>
+
+                <div class="fmt-group align-group">
+                  <button type="button" id="btn-align-left" class="fmt-btn" data-align="left" title="Align Left">⫷</button>
+                  <button type="button" id="btn-align-center" class="fmt-btn active" data-align="center" title="Align Center">≡</button>
+                  <button type="button" id="btn-align-right" class="fmt-btn" data-align="right" title="Align Right">⫸</button>
+                </div>
+
+                <div class="fmt-group style-group">
+                  <button type="button" id="btn-toggle-italic" class="fmt-btn" title="Toggle Italic / Slant"><em>I</em></button>
+                  <button type="button" id="btn-toggle-case" class="fmt-btn" title="Toggle UPPERCASE">TT</button>
+                </div>
+
+                <div class="fmt-group action-group">
+                  <button type="button" id="btn-inline-apply" class="fmt-btn-action btn-apply" title="Apply Edit (Enter)">✓</button>
+                  <button type="button" id="btn-inline-cancel" class="fmt-btn-action btn-cancel" title="Cancel (Esc)">✕</button>
+                </div>
+              </div>
+
+              <!-- In-Place Editable Input -->
+              <input type="text" id="inline-text-input" class="inline-text-input" autocomplete="off" spellcheck="false" />
+            </div>
+            
+            <!-- Scanning Laser Animation Overlay -->
+            <div id="scanning-overlay" class="scanning-overlay hidden">
+              <div class="scanning-laser"></div>
+              <div class="scanning-badge">
+                <span class="spinner-dot"></span>
+                <span id="scanning-status-text">⚡ Running PP-OCRv5 Mobile Text Detection...</span>
+              </div>
+            </div>
+            
+            <!-- Before/After Split View (Hidden by default) -->
+            <div id="split-slider-container" class="split-slider-container hidden">
+              <canvas id="split-before-canvas"></canvas>
+              <canvas id="split-after-canvas"></canvas>
+              <div id="slider-handle" class="slider-handle">
+                <div class="handle-icon">↔</div>
+              </div>
+              <div class="split-tag tag-before">ORIGINAL</div>
+              <div class="split-tag tag-after">RECONSTRUCTED</div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- AI & OCR Engine Settings Modal -->
+  <div id="engine-modal" class="modal-backdrop hidden">
+    <div class="modal-card modal-engine">
+      <div class="modal-header">
+        <h3>⚙️ AI & OCR Engine Settings</h3>
+        <button id="btn-engine-close" class="close-btn">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p class="section-desc">Choose between high-speed RapidOCR ONNX inference or Google Gemini 2.5 Flash Vision (Cloud AI API).</p>
+        
+        <div class="form-group">
+          <label>Inference Engine:</label>
+          <div class="engine-radio-list">
+            <label class="engine-radio-card active" id="card-engine-rapidocr">
+              <input type="radio" name="engine_choice" value="rapidocr" checked>
+              <div class="radio-info">
+                <div class="radio-title">
+                  <span class="engine-icon">⚡</span>
+                  <strong>RapidOCR ONNX Engine (High Speed Vision Pipeline)</strong>
+                  <span class="badge-recommended">Connected</span>
+                </div>
+                <p class="field-hint">Ultra-fast ~24ms ONNX vision runtime with Otsu typography profiler & smart glyph inpainting.</p>
+              </div>
+            </label>
+
+            <label class="engine-radio-card" id="card-engine-gemini">
+              <input type="radio" name="engine_choice" value="gemini">
+              <div class="radio-info">
+                <div class="radio-title">
+                  <span class="engine-icon">🌟</span>
+                  <strong>Google Gemini 2.5 Flash Vision (Cloud AI)</strong>
+                </div>
+                <p class="field-hint">Deep multimodal document understanding powered by Google AI. Requires an API key.</p>
+              </div>
+            </label>
+          </div>
+        </div>
+
+        <div class="form-group hidden" id="gemini-key-group">
+          <label for="gemini-api-key">Google Gemini API Key:</label>
+          <input type="password" id="gemini-api-key" class="text-input" placeholder="Enter your Gemini API key (AIzaSy...)">
+          <p class="field-hint">Your API key is used strictly for on-demand vision requests and is never saved to disk.</p>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button id="btn-engine-cancel" class="btn btn-secondary">Cancel</button>
+        <button id="btn-engine-save" class="btn btn-primary">Save Settings</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Batch Edit Modal / Dialog (Stretch Feature 2) -->
+  <div id="batch-modal" class="modal-backdrop hidden">
+    <div class="modal-card modal-batch">
+      <div class="modal-header">
+        <h3>⚡ Batch Mode — Multi-Document Text Replacement</h3>
+        <button id="btn-batch-close" class="close-btn">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p class="section-desc">Apply identical find-and-replace rules across multiple images or templates without touching surrounding graphics.</p>
+        
+        <div class="form-group">
+          <label>Target Documents:</label>
+          <div class="batch-doc-pills" id="batch-doc-list">
+            <span class="pill active">Template 1 (Flyer)</span>
+            <span class="pill active">Template 2 (Menu)</span>
+            <span class="pill active">Template 3 (Infographic)</span>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="batch-search-text">Target Text to Find & Inpaint:</label>
+          <input type="text" id="batch-search-text" class="text-input" value="2026" placeholder="e.g. 2025">
+        </div>
+
+        <div class="form-group">
+          <label for="batch-replace-text">Replacement Text to Re-render:</label>
+          <input type="text" id="batch-replace-text" class="text-input" value="2027 (PRO)" placeholder="e.g. 2026">
+        </div>
+
+        <div id="batch-progress-container" class="progress-bar-container hidden">
+          <div class="progress-label-row">
+            <span id="batch-progress-status">Processing...</span>
+            <span id="batch-progress-percent">0%</span>
+          </div>
+          <div class="progress-track">
+            <div id="batch-progress-bar" class="progress-fill"></div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button id="btn-cancel-batch" class="btn btn-secondary">Cancel</button>
+        <button id="btn-execute-batch" class="btn btn-primary">⚡ Execute Batch Edit</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Camera Capture Modal -->
+  <div id="camera-modal" class="modal-backdrop hidden">
+    <div class="modal-card modal-camera">
+      <div class="modal-header">
+        <h3>📷 On-Device Camera Capture</h3>
+        <button id="btn-camera-close" class="close-btn">&times;</button>
+      </div>
+      <div class="modal-body camera-body">
+        <video id="camera-feed" autoplay playsinline></video>
+        <p class="field-hint">Point camera at any document, poster, or receipt.</p>
+      </div>
+      <div class="modal-footer">
+        <button id="btn-camera-cancel" class="btn btn-secondary">Cancel</button>
+        <button id="btn-camera-snap" class="btn btn-primary">📸 Snap & Detect Text</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- WebAssembly OCR Engine for 100% Offline Client Fallback -->
+  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
