@@ -150,15 +150,15 @@ class TextractSimulator {
       if (!this.selectedRegion) return;
       this.selectedRegion.fontSize = Math.max(9, (this.selectedRegion.fontSize || 24) - 2);
       this.fontSizeDisplay.textContent = `${Math.round(this.selectedRegion.fontSize)}px`;
-      this.inlineInput.style.fontSize = `${Math.round(this.selectedRegion.fontSize)}px`;
+      this.inlineInput.style.fontSize = `${this.getVisualFontSize(this.selectedRegion)}px`;
     });
 
     this.btnFontInc.addEventListener('click', (e) => {
       e.stopPropagation();
       if (!this.selectedRegion) return;
-      this.selectedRegion.fontSize = Math.min(120, (this.selectedRegion.fontSize || 24) + 2);
+      this.selectedRegion.fontSize = Math.min(200, (this.selectedRegion.fontSize || 24) + 2);
       this.fontSizeDisplay.textContent = `${Math.round(this.selectedRegion.fontSize)}px`;
-      this.inlineInput.style.fontSize = `${Math.round(this.selectedRegion.fontSize)}px`;
+      this.inlineInput.style.fontSize = `${this.getVisualFontSize(this.selectedRegion)}px`;
     });
 
     // Font Weight Buttons (Reg, Bold, Black)
@@ -306,8 +306,9 @@ class TextractSimulator {
         if (!isMove) {
           const isVert = this.selectedRegion.isVertical;
           const newFontSize = Math.max(12, Math.round((isVert ? newBoxW : newBoxH) * 1.15));
+          this.selectedRegion.fontSize = newFontSize;
           this.fontSizeDisplay.textContent = `${newFontSize}px`;
-          this.inlineInput.style.fontSize = `${newFontSize}px`;
+          this.inlineInput.style.fontSize = `${this.getVisualFontSize(this.selectedRegion)}px`;
         }
       };
 
@@ -1264,6 +1265,29 @@ class TextractSimulator {
   /**
    * Direct In-Place Inline Text Editing with Floating Typography Formatting Bar
    */
+  getVisualFontSize(region) {
+    if (!region || !region.box) return 14;
+    const renderedHeight = this.canvas.clientHeight || 600;
+    const canvasH = this.canvas.height || 1000;
+    const scaleY = renderedHeight / canvasH;
+
+    const boxScreenHeight = region.box.h * scaleY;
+    
+    // Convert canvas font size to screen display pixels
+    let screenFontSize;
+    if (region.fontSize && region.fontSize > 0) {
+      screenFontSize = region.fontSize * scaleY;
+    } else {
+      screenFontSize = boxScreenHeight * 0.85;
+    }
+
+    // Ensure the font fits cleanly inside the box height without clipping
+    const maxFittingSize = Math.max(9, boxScreenHeight * 0.88);
+    screenFontSize = Math.min(screenFontSize, maxFittingSize);
+
+    return Math.max(9, Math.round(screenFontSize));
+  }
+
   startInlineEditing(region) {
     this.selectedRegion = region;
     const cw = this.canvas.width;
@@ -1272,8 +1296,8 @@ class TextractSimulator {
 
     const leftPct = (box.x / cw) * 100;
     const topPct = (box.y / ch) * 100;
-    const widthPct = Math.max(16, (box.w / cw) * 100);
-    const heightPct = Math.max(3.6, (box.h / ch) * 100);
+    const widthPct = (box.w / cw) * 100;
+    const heightPct = (box.h / ch) * 100;
 
     this.inlineEditor.style.left = `${leftPct}%`;
     this.inlineEditor.style.top = `${topPct}%`;
@@ -1333,7 +1357,7 @@ class TextractSimulator {
     // Style the in-place text input
     this.inlineInput.value = region.text;
     this.inlineInput.style.fontFamily = `"${family}", sans-serif`;
-    this.inlineInput.style.fontSize = `${naturalFontSize}px`;
+    this.inlineInput.style.fontSize = `${this.getVisualFontSize(region)}px`;
     this.inlineInput.style.fontWeight = weight;
     this.inlineInput.style.fontStyle = fontStyle;
     this.inlineInput.style.color = textColor;
@@ -1798,6 +1822,9 @@ class TextractSimulator {
     this.zoomLevel = Math.max(0.6, Math.min(2.0, level));
     document.getElementById('zoom-level').textContent = `${Math.round(this.zoomLevel * 100)}%`;
     this.canvasContainer.style.transform = `scale(${this.zoomLevel})`;
+    if (this.selectedRegion && this.inlineEditor && !this.inlineEditor.classList.contains('hidden')) {
+      this.inlineInput.style.fontSize = `${this.getVisualFontSize(this.selectedRegion)}px`;
+    }
   }
 
   exportImage() {
