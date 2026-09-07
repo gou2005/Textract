@@ -42,20 +42,9 @@
         <div class="panel-card">
           <h2>📷 Document Input Source</h2>
           <p class="section-desc">Select an interactive template, import an image, or capture via camera to test local OCR & background reconstruction.</p>
-          
-          <div class="form-group template-group">
-            <label for="template-select">Preset Document Template:</label>
-            <select id="template-select" class="select-input">
-              <option value="aws_sample" selected>🚀 AWS Builder Center Flyer (Sample Image)</option>
-              <option value="poster">⚡ iQOO Battle 2026 Flyer</option>
-              <option value="menu">🍔 Bistro Menu & Pricing</option>
-              <option value="infographic">📊 Snapdragon NPU Infographic</option>
-              <option value="certificate">🎓 Tech Summit Certificate</option>
-            </select>
-          </div>
 
           <div class="form-group">
-            <label for="ocr-granularity-select">OCR Detection Sensitivity:</label>
+            <label for="ocr-granularity-select">OCR DETECTION SENSITIVITY:</label>
             <select id="ocr-granularity-select" class="select-input">
               <option value="all" selected>🎯 High Sensitivity (All Text & Details)</option>
               <option value="lines">📄 Balanced Text Lines</option>
@@ -65,14 +54,14 @@
 
           <div class="btn-group">
             <label class="btn btn-primary file-label">
-              <span>📁 Import Custom Image</span>
+              <span>📁 IMPORT CUSTOM IMAGE</span>
               <input type="file" id="file-input" accept="image/*" class="hidden-input">
             </label>
             <button id="btn-camera-capture" class="btn btn-secondary">
-              <span>📷 Capture Photo</span>
+              <span>📷 CAPTURE PHOTO</span>
             </button>
             <button id="btn-open-batch" class="btn btn-secondary">
-              <span>⚡ Batch Multi-Edit Mode</span>
+              <span>⚡ BATCH MULTI-EDIT MODE</span>
             </button>
           </div>
         </div>

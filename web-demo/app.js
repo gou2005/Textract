@@ -58,11 +58,14 @@ class TextractSimulator {
   }
 
   initEventListeners() {
-    // Template dropdown
-    document.getElementById('template-select').addEventListener('change', (e) => {
-      this.currentTemplate = e.target.value;
-      this.loadTemplate(this.currentTemplate);
-    });
+    // Template dropdown (if present)
+    const templateSelect = document.getElementById('template-select');
+    if (templateSelect) {
+      templateSelect.addEventListener('change', (e) => {
+        this.currentTemplate = e.target.value;
+        this.loadTemplate(this.currentTemplate);
+      });
+    }
 
     // Granularity / Sensitivity selector
     document.getElementById('ocr-granularity-select').addEventListener('change', (e) => {
