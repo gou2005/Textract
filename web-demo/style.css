@@ -140,14 +140,18 @@ body {
 }
 
 .brand-text h1 {
-  font-size: 19px;
+  font-size: 17px;
   font-weight: 700;
   line-height: 1.2;
-  color: var(--ink);
+  color: #ffffff;
+  background-color: #0d3b82;
+  padding: 3px 10px;
+  border-radius: 6px;
   letter-spacing: -0.2px;
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: 10px;
+  width: fit-content;
+  margin-bottom: 2px;
 }
 
 .badge-bmw {
