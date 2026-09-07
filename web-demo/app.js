@@ -1,7 +1,7 @@
-// SnapText Interactive Simulator Engine (iQOO Hackathon 2026)
-// Fully Offline, Snapdragon NPU & OpenCV Inpainting Simulation + Gemini Vision Ready
+// Textract Interactive Simulator Engine
+// Document Text Inpainting & Typography Replicator
 
-class SnapTextSimulator {
+class TextractSimulator {
   constructor() {
     this.canvas = document.getElementById('doc-canvas');
     this.ctx = this.canvas.getContext('2d', { willReadFrequently: true });
@@ -1802,7 +1802,7 @@ class SnapTextSimulator {
 
   exportImage() {
     const link = document.createElement('a');
-    link.download = `snaptext_edited_${Date.now()}.png`;
+    link.download = `textract_edited_${Date.now()}.png`;
     link.href = this.canvas.toDataURL('image/png');
     link.click();
   }
@@ -1815,6 +1815,6 @@ class SnapTextSimulator {
 }
 
 window.addEventListener('DOMContentLoaded', () => {
-  window.simulator = new SnapTextSimulator();
+  window.simulator = new TextractSimulator();
   window.simulator.loadTemplate('aws_sample');
 });

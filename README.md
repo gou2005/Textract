@@ -1,4 +1,4 @@
-# SnapText Pro — Context-Preserving Document & Typography Editor ⚡
+# Textract — Context-Preserving Document & Typography Editor ⚡
 
 > **Next-Generation Computer Vision Suite for Non-Destructive In-Place Document Text Editing, Deep Typography Profiling, and Glyph-Level Background Inpainting.**  
 > *Engineered with FastAPI, RapidOCR ONNX Runtime, OpenCV Telea/Navier-Stokes, and HTML5 Canvas.*
@@ -18,7 +18,7 @@
 
 1. [Executive Summary & Vision](#-1-executive-summary--vision)
 2. [Problem Statement & Market Gap](#-2-problem-statement--market-gap)
-3. [The Solution: SnapText Pro](#-3-the-solution-snaptext-pro)
+3. [The Solution: Textract](#-3-the-solution-snaptext-pro)
 4. [Complete Slide-by-Slide Pitch Deck Blueprint (AI PPT Ready)](#-4-complete-slide-by-slide-pitch-deck-blueprint-ai-ppt-ready)
 5. [Core Architectural Pipeline](#-5-core-architectural-pipeline)
 6. [Deep Tech & Under-The-Hood Algorithms](#-6-deep-tech--under-the-hood-algorithms)
@@ -39,17 +39,17 @@
 
 ## ⚡ 1. Executive Summary & Vision
 
-**SnapText Pro** is an end-to-end, context-preserving document text editing system designed to detect, erase, and replace text flattened inside graphic images—such as promotional flyers, restaurant menus, certificates, infographics, social media banners, and receipts—**without touching or corrupting background colors, gradients, textures, or surrounding artwork**.
+**Textract** is an end-to-end, context-preserving document text editing system designed to detect, erase, and replace text flattened inside graphic images—such as promotional flyers, restaurant menus, certificates, infographics, social media banners, and receipts—**without touching or corrupting background colors, gradients, textures, or surrounding artwork**.
 
 Traditional photo editors require tedious manual clone stamping, layer masking, and manual font guessing. Generative AI diffusion models (e.g., Photoshop Generative Fill, Canva Magic Edit) suffer from severe hallucinations, blur surrounding vector graphics, require persistent cloud connectivity, and take 3–10 seconds per edit. 
 
-**SnapText Pro bridges this gap** by fusing deterministic computer vision (Otsu thresholding, Distance Transforms, Hough Line Transforms, OpenCV Fast Marching Inpainting) with ultra-fast ONNX neural networks and an interactive browser-based 2D Canvas engine. The result is an instant (**< 30ms**), non-destructive document editing workflow where replacement text matches the original font family, weight, slant, color, and spacing with pixel-level fidelity.
+**Textract bridges this gap** by fusing deterministic computer vision (Otsu thresholding, Distance Transforms, Hough Line Transforms, OpenCV Fast Marching Inpainting) with ultra-fast ONNX neural networks and an interactive browser-based 2D Canvas engine. The result is an instant (**< 30ms**), non-destructive document editing workflow where replacement text matches the original font family, weight, slant, color, and spacing with pixel-level fidelity.
 
 ---
 
 ## 🛑 2. Problem Statement & Market Gap
 
-| Traditional Pain Point | Industry Reality | How SnapText Pro Solves It |
+| Traditional Pain Point | Industry Reality | How Textract Solves It |
 |---|---|---|
 | **Destructive Erasure** | Standard image erasers place solid rectangular patches or blurry diffusion blurs over text, destroying background gradients and nearby graphics. | **Smart Glyph-Level Inpainting:** Inpaints *only* the character ink strokes using OpenCV Telea with feathered alpha boundary blending, leaving background textures 100% intact. |
 | **Typography Loss & Mismatch** | When editing text in a flyer, users have to manually guess the font family, font size, weight, slant, kerning, and hex color code. | **Deep Typography Profiler:** Automatically extracts 11 typography attributes (RGB color, font family, weight 300–900, italic angle, letter-spacing, alignment, casing) in 2ms. |
@@ -59,9 +59,9 @@ Traditional photo editors require tedious manual clone stamping, layer masking, 
 
 ---
 
-## 💡 3. The Solution: SnapText Pro
+## 💡 3. The Solution: Textract
 
-SnapText Pro introduces a 4-pillar unified architecture:
+Textract introduces a 4-pillar unified architecture:
 
 ```
 [ Input Image (Flyer / Menu / Poster) ]
@@ -110,7 +110,7 @@ SnapText Pro introduces a 4-pillar unified architecture:
 ---
 
 ### Slide 1: Title & Vision Hook
-- **Slide Title:** SnapText Pro: Context-Preserving Document & Typography Editor
+- **Slide Title:** Textract: Context-Preserving Document & Typography Editor
 - **Subtitle:** Seamless In-Place Text Editing on Flattened Images Without Touching Background Graphics
 - **Presenter / Team:** AI & Computer Vision Engineering Team
 - **Tagline:** "Don't recreate the document. Just edit the text."
@@ -126,12 +126,12 @@ SnapText Pro introduces a 4-pillar unified architecture:
   - Generative AI tools (e.g., Photoshop Generative Fill, Canva Magic Eraser) take 5–10 seconds, require cloud access, and hallucinate background distortions.
 - **Bullet Stats:**
   - **82%** of small businesses lack original layered design files for marketing materials.
-  - **4.5 sec avg.** cloud generative AI latency vs. **40 ms** SnapText Pro real-time editing.
+  - **4.5 sec avg.** cloud generative AI latency vs. **40 ms** Textract real-time editing.
   - **100%** risk of cloud data exposure when uploading sensitive documents.
 
 ---
 
-### Slide 3: The Solution: SnapText Pro
+### Slide 3: The Solution: Textract
 - **Slide Title:** The Solution: Intelligent, In-Place Document Synthesis
 - **Key Talking Points:**
   - **Click, Type, Done:** Direct in-canvas inline editing of any text on any image.
@@ -155,7 +155,7 @@ SnapText Pro introduces a 4-pillar unified architecture:
 ### Slide 5: Deep Technology: Typography Profiling Engine
 - **Slide Title:** Proprietary Typography Engine: Beyond Basic OCR
 - **Key Talking Points:**
-  - Standard OCR outputs only raw strings. SnapText Pro extracts **11 typography dimensions**:
+  - Standard OCR outputs only raw strings. Textract extracts **11 typography dimensions**:
     1. **Text Color:** Median foreground BGR color sampling immune to anti-aliased edges.
     2. **Background Color:** Boundary perimeter color sampling.
     3. **Font Weight:** Euclidean Distance Transform computing stroke radius scaled against font height.
@@ -169,12 +169,12 @@ SnapText Pro introduces a 4-pillar unified architecture:
 - **Slide Title:** Context-Preserving Erasure: Smart Glyph-Level Inpainting
 - **Key Talking Points:**
   - Why rectangle erasers fail: Rectangular cuts bleed across background gradients and erase decorative lines.
-  - **SnapText Pro Innovation:**
+  - **Textract Innovation:**
     - Segments the exact ink masks using Otsu thresholding.
     - Applies morphological elliptical dilation (5x5 kernel) to encompass anti-aliased boundaries.
     - Runs OpenCV Telea Fast Marching Method inside a localized padded sub-crop.
     - Applies Gaussian feathered alpha blending for seamless border integration.
-- **Visuals:** Side-by-side comparison: Rectangular blurred eraser vs. SnapText Pro glyph inpainting showing flawless background preservation.
+- **Visuals:** Side-by-side comparison: Rectangular blurred eraser vs. Textract glyph inpainting showing flawless background preservation.
 
 ---
 
@@ -204,7 +204,7 @@ SnapText Pro introduces a 4-pillar unified architecture:
 ### Slide 9: Performance Benchmarks & Competitive Matrix
 - **Slide Title:** Benchmarks: 100x Faster Than Cloud Generative AI
 - **Key Metrics Table:**
-  - **Latency:** SnapText Pro (~40ms) vs. Cloud Generative Fill (4,500ms) vs. Manual Photoshop (180,000ms).
+  - **Latency:** Textract (~40ms) vs. Cloud Generative Fill (4,500ms) vs. Manual Photoshop (180,000ms).
   - **Cost per Edit:** $0.00 (Local ONNX) vs. $0.03–$0.08 per cloud API call.
   - **Data Privacy:** 100% sealed on-device / zero network requirement.
   - **Artifacts:** 0% generative hallucination rate.
@@ -301,7 +301,7 @@ SnapText Pro introduces a 4-pillar unified architecture:
 ## 🔬 6. Deep Tech & Under-The-Hood Algorithms
 
 ### 6.1 Rapid OCR & Multimodal Cloud Vision
-SnapText Pro supports dual inference engines:
+Textract supports dual inference engines:
 1. **RapidOCR ONNX (Local & Ultra-Fast):**
    - Employs **PP-OCRv4/v5** lightweight models running through ONNX Runtime.
    - Outputs rotated 4-point bounding polygons `[[x1, y1], [x2, y2], [x3, y3], [x4, y4]]` and confidence scores.
@@ -312,7 +312,7 @@ SnapText Pro supports dual inference engines:
    - Automatically falls back to local RapidOCR if offline or if no API key is configured.
 
 ### 6.2 Deep Typography Profiler
-Extracting raw text is insufficient for seamless editing. SnapText Pro’s `extract_typography()` function in `backend/app.py` extracts 11 typography attributes in under **3ms per patch**:
+Extracting raw text is insufficient for seamless editing. Textract’s `extract_typography()` function in `backend/app.py` extracts 11 typography attributes in under **3ms per patch**:
 
 ```python
 # 1. Otsu Ink Segmentation
@@ -350,7 +350,7 @@ lines = cv2.HoughLinesP(text_mask.astype(np.uint8), 1, np.pi/180, 15, minLineLen
 ```
 
 ### 6.3 Smart Glyph Inpainting & Background Preservation
-Traditional document inpainters wipe a solid rectangle over text, creating blurry patches that ruin subtle gradients, paper grain, or adjacent graphics. SnapText Pro utilizes a **two-tier inpainting strategy**:
+Traditional document inpainters wipe a solid rectangle over text, creating blurry patches that ruin subtle gradients, paper grain, or adjacent graphics. Textract utilizes a **two-tier inpainting strategy**:
 
 1. **Smart Glyph Masking:**
    - Inside the bounding box, the ink mask is isolated and dilated using a $5 \times 5$ elliptical morphological kernel (`cv2.MORPH_ELLIPSE`).
@@ -364,7 +364,7 @@ Traditional document inpainters wipe a solid rectangle over text, creating blurr
    - Instead of processing the entire 4K image, inpainting executes inside a padded region of interest ($ROI + 30\%$), achieving sub-15ms execution speeds.
 
 ### 6.4 Dynamic Letter-Spacing & Baseline Fitting
-When user edits text (e.g., replacing short words with longer words, or typing into wide-tracked brand headlines), standard HTML Canvas text rendering either truncates or overflows. SnapText Pro implements an intelligent client-side fitting algorithm in `web-demo/app.js`:
+When user edits text (e.g., replacing short words with longer words, or typing into wide-tracked brand headlines), standard HTML Canvas text rendering either truncates or overflows. Textract implements an intelligent client-side fitting algorithm in `web-demo/app.js`:
 
 ```javascript
 // Measure rendered text width
@@ -422,7 +422,7 @@ To give users full layout editing freedom without breaking the background:
 
 Benchmarked on an Intel Core i7 / AMD Ryzen 7 workstation with 1080p document images:
 
-| Performance Metric | Cloud Generative AI (Canva / Adobe Firefly) | Traditional Desktop (Photoshop / GIMP) | SnapText Pro (Our System) | Advantage |
+| Performance Metric | Cloud Generative AI (Canva / Adobe Firefly) | Traditional Desktop (Photoshop / GIMP) | Textract (Our System) | Advantage |
 |---|---|---|---|---|
 | **Text Detection Time** | 2,500 – 4,000 ms | Manual User Drag (10–30s) | **18 – 28 ms** | **100x Faster** |
 | **Inpainting Latency** | 3,000 – 6,000 ms | Manual Clone Stamp (1–3 min) | **12 – 18 ms** | **250x Faster** |

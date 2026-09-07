@@ -123,9 +123,9 @@ class EditHistoryManager {
     <application
         android:allowBackup="false"
         android:icon="@mipmap/ic_launcher"
-        android:label="SnapText IQOO"
+        android:label="Textract IQOO"
         android:supportsRtl="true"
-        android:theme="@style/Theme.SnapText">
+        android:theme="@style/Theme.Textract">
 
         <activity
             android:name=".MainActivity"
