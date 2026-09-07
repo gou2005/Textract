@@ -184,6 +184,7 @@ Textract introduces a 4-pillar unified architecture:
   - **8 Directional Handles:** Top, Bottom, Left, Right, and all 4 corners for granular bounding box adjustment.
   - **Move Handle:** Drag any text box anywhere on the screen.
   - **Original Footprint Protection (`originalBox`):** Even if the user drags the text box across the canvas, the system erases *only* the original text location, keeping the new location pristine.
+  - **In-Place Selection Look & Proportional Font Fitting:** Text inside the editing box matches the exact visual size of document text without clipping, distortion, or opaque card overlays.
   - **Dynamic Letter-Spacing:** Automatically expands letter spacing for wide-tracked headers or compresses font size to prevent text truncation.
 - **Visuals:** UI screenshot of the inline editor showing the 8 resize dots, the top move anchor, and live typography controls.
 
@@ -395,6 +396,18 @@ To give users full layout editing freedom without breaking the background:
   - **Result:** Moving a text box erases *only* the original text footprint from the background, and seamlessly renders the text in the new location without corrupting the background beneath the new position.
   - Clicking **Reset** restores both the original pixels and the exact original bounding box geometry.
 
+### 6.6 Visual Viewport Font Scaling & In-Place Text Selection
+When editing text on an HTML5 canvas, high-resolution document images (e.g., 2000×3000) are scaled down by CSS to fit the viewport. If internal canvas font metrics (e.g. 102px) are applied directly to a DOM `<input>` element without scaling, text becomes gigantic, clipped, and unreadable.
+
+Textract resolves this with dynamic visual scaling and in-place selection styling:
+1. **Dynamic Resolution Scaling (`getVisualFontSize`):**
+   - Computes the real-time viewport scale factor: `scale = canvas.clientHeight / canvas.height`.
+   - Maps document font sizes down to screen CSS pixels so the text inside the input exactly matches the visual size of the text on the flyer.
+   - Ensures vertical baseline centering and prevents any text clipping: `screenFontSize = Math.min(fontSize * scale, boxScreenHeight * 0.88)`.
+2. **In-Place Native Selection Highlight:**
+   - Replaced heavy opaque cards with a translucent selection tint (`rgba(34, 115, 233, 0.22)`) and crisp borders (`1.5px solid #2273e9`).
+   - Sits flush over the original text, providing an authentic "selected text" appearance while preserving the 8 resize handles and top move handle.
+
 ---
 
 ## 🎯 7. Comprehensive Feature Matrix
@@ -408,6 +421,8 @@ To give users full layout editing freedom without breaking the background:
 | **Reposition / Move Handle** | Free drag-and-drop text repositioning | Pointer Transform Handler (`web-demo/app.js`) |
 | **Background Protection** | Locks inpainting to original text footprint | `originalBox` coordinate buffer |
 | **Dynamic Letter-Spacing** | Auto-fit wide tracking or narrow kerning | Canvas `letterSpacing` Engine |
+| **Visual Viewport Font Auto-Fit** | Dynamically scales input font to screen resolution, preventing clipped text | `getVisualFontSize` Engine (`web-demo/app.js`) |
+| **In-Place Text Selection Look** | Translucent selection tint with flush boundary alignment | Inline Editor CSS (`web-demo/style.css`) |
 | **Before / After Split View** | Interactive draggable wipe slider | Dual-layer Canvas (`web-demo/app.js`) |
 | **Draw-to-Edit Mode** | Drag arbitrary selection box over any text | Custom Bounding Box Handler |
 | **Batch Multi-Edit** | Global find-and-replace across templates | Batch Replacement Engine |
@@ -635,6 +650,7 @@ python -m http.server 3000
 - [x] **Dynamic Letter-Spacing Kerning Compensation** (Shipped)
 - [x] **Smart Glyph-Level Telea Inpainting with Alpha Feathering** (Shipped)
 - [x] **Dual RapidOCR ONNX + Gemini 2.5 Flash Vision Support** (Shipped)
+- [x] **Visual Viewport Font Auto-Fit & In-Place Selection Highlight** (Shipped)
 - [ ] **Multi-Line Automatic Text Reflow:** Intelligent line wrapping for paragraph blocks.
 - [ ] **Perspective & Curved Text Warping:** Mesh-based font rendering for text along arcs and 3D angled surfaces.
 - [ ] **Native Mobile Android App:** Jetpack Compose frontend with Qualcomm Hexagon NPU hardware acceleration.
