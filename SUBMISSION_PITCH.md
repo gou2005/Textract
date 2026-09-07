@@ -1,5 +1,5 @@
 # iQOO Hackathon 2026 · Idea-Screening Submission
-## Project Title: Context-Preserving Document Text Editor (SnapText)
+## Project Title: Context-Preserving Document Text Editor (Textract)
 **Track / Event:** iQOO Hackathon 2026 · Chennai City Battle  
 **Stage:** Idea-Screening Submission Stage  
 **Target Hardware:** iQOO Flagship & Neo Series Smartphones (Snapdragon 8 Gen 3 / 8s Gen 3 / 7+ Gen 3 with Hexagon NPU)  
@@ -9,7 +9,7 @@
 
 ### 1. Executive Summary & Elevator Pitch
 
-**SnapText** is a 100% offline, NPU-accelerated native Android document text editor that detects text embedded in flattened images (infographics, posters, scanned documents, flyers, menus), allows instant tap-to-edit replacement via keyboard or on-device speech, and reconstructs the underlying background texture locally using OpenCV (`cv2.inpaint(INPAINT_TELEA)`) without touching surrounding graphics.
+**Textract** is a 100% offline, NPU-accelerated native Android document text editor that detects text embedded in flattened images (infographics, posters, scanned documents, flyers, menus), allows instant tap-to-edit replacement via keyboard or on-device speech, and reconstructs the underlying background texture locally using OpenCV (`cv2.inpaint(INPAINT_TELEA)`) without touching surrounding graphics.
 
 **Zero Data Leaves the Device:** The application declares **no `INTERNET` permission** in `AndroidManifest.xml`. It guarantees absolute data privacy, eliminates cloud latency, and leverages the Qualcomm Hexagon NPU via ONNX Runtime Mobile NNAPI for sub-30ms inference.
 
@@ -17,7 +17,7 @@
 
 ### 2. Pain Points & Unique Value Proposition
 
-| Traditional Cloud / Desktop Approach | SnapText Solution |
+| Traditional Cloud / Desktop Approach | Textract Solution |
 |---|---|
 | **Privacy Vulnerability:** Sensitive scanned IDs, financial flyers, and confidential documents are uploaded to cloud servers. | **100% Offline & Private:** Zero network sockets. No internet permission requested. All tensor operations execute locally in RAM. |
 | **High Latency & Cloud Dependence:** Cloud generative erasers require 3–8 seconds per edit and a stable internet connection. | **Instant (~40ms pipeline):** Hardware-accelerated PP-OCRv5 INT8 on Snapdragon NPU + native C++ Telea inpainting. |
@@ -28,7 +28,7 @@
 
 ### 3. PRD Feature Compliance Matrix
 
-| # | PRD Requirement | Implementation in SnapText | Status |
+| # | PRD Requirement | Implementation in Textract | Status |
 |---|---|---|---|
 | **1** | **Import image** | Gallery picker (`PickVisualMedia`) + Camera capture (`ACTION_IMAGE_CAPTURE`) with EXIF normalization. | ✅ **Shipped** |
 | **2** | **Auto text detection** | PP-OCRv5 DBNet INT8 quantized with ONNX Runtime NNAPI EP + real-time contrast boundary candidate extraction. | ✅ **Shipped** |
@@ -38,7 +38,7 @@
 | **6** | **Re-render new text** | Border perimeter K-means color sampling, dynamic font sizing, baseline alignment, and hardware-accelerated Canvas paint. | ✅ **Shipped** |
 | **7** | **Multi-edit per session** | Consecutive edits across multiple regions on the same session canvas. | ✅ **Shipped** |
 | **8** | **Undo per edit** | Non-destructive `EditHistoryManager` stack with unlimited step-by-step undo and redo. | ✅ **Shipped** |
-| **9** | **Save / export** | Direct export to Android MediaStore (`/Pictures/SnapText`) + native Android share sheet (`ACTION_SEND`). | ✅ **Shipped** |
+| **9** | **Save / export** | Direct export to Android MediaStore (`/Pictures/Textract`) + native Android share sheet (`ACTION_SEND`). | ✅ **Shipped** |
 | **10** | **Visible offline proof** | Prominent top bar badge verifying `100% OFFLINE · ZERO NETWORK CALLS`. | ✅ **Shipped** |
 | **S1** | **Stretch: Before/After Slider** | Draggable split slider (`BeforeAfterSlider.kt`) providing visual proof of pixel preservation. | ✅ **Shipped** |
 | **S2** | **Stretch: Batch Mode** | Multi-image find-and-replace dialog (`BatchEditDialog.kt`) processing multiple documents in parallel. | ✅ **Shipped** |
@@ -90,7 +90,7 @@
 
 ### 5. Benchmark Comparison
 
-| Metric / Scenario | Cloud AI Erasers (Canva, Photoroom) | Mobile Photoshop / Snapseed | **SnapText (Our App)** |
+| Metric / Scenario | Cloud AI Erasers (Canva, Photoroom) | Mobile Photoshop / Snapseed | **Textract (Our App)** |
 |---|---|---|---|
 | **Internet Dependency** | Mandatory (Fails offline) | Partial (Some features cloud) | **Zero (100% Offline Manifest)** |
 | **Detection Latency** | 3,000 – 6,000 ms (Server queue) | Manual cropping (1–3 min) | **< 30 ms (Snapdragon NPU)** |
@@ -103,7 +103,7 @@
 
 ### 6. On-Ground Battle Plan (Red Light / Green Light Logistics)
 
-Should SnapText be shortlisted for the Chennai City Battle 24-hour on-ground hackathon:
+Should Textract be shortlisted for the Chennai City Battle 24-hour on-ground hackathon:
 
 - **Red Light Phase (Core Architecture & Reliability):**
   - Anchor ONNX Runtime C++ JNI bridge and verify NNAPI execution provider fallback to CPU.

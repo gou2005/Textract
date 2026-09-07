@@ -9,7 +9,7 @@ import cv2
 import numpy as np
 from rapidocr_onnxruntime import RapidOCR
 
-app = FastAPI(title="SnapText Pro AI Backend Engine", version="2.5.0")
+app = FastAPI(title="Textract AI Backend Engine", version="2.5.0")
 
 app.add_middleware(
     CORSMiddleware,
