@@ -74,3 +74,13 @@ Thumbs.db
 # Vercel & Runtime Logs
 .vercel/
 *.log
+
+# Pitch, Presentation Drafts & Submission Notes
+SUBMISSION_PITCH.md
+submissionpitch.md
+*pitch*.md
+*submission*.md
+pitch/
+pitches/
+drafts/
+
