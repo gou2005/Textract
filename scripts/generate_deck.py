@@ -1,7 +1,7 @@
 """
 Textract - iQOO Hackathon 2026 Presentation Deck Generator
-Generates a 16:9 widescreen presentation deck using python-pptx with the requested Cyan theme (#90E6FC)
-and sleek dark hackathon aesthetic.
+Generates a 16:9 widescreen presentation deck using python-pptx with the requested Pure Cyan background theme (#00FFFF)
+and high-contrast dark typography (#061830, #004BA0, #142337) with crisp containers.
 """
 
 import os
@@ -14,28 +14,33 @@ from pptx.enum.shapes import MSO_SHAPE
 # -----------------------------------------------------------------------------
 # CONSTANTS & THEME PALETTE
 # -----------------------------------------------------------------------------
-# Primary Theme Accent requested by user: #90E6FC (RGB 144, 230, 252)
-CYAN_ACCENT    = RGBColor(144, 230, 252)  # #90E6FC
-CYAN_BRIGHT    = RGBColor(190, 243, 254)  # #BEF3FE
-CYAN_MUTED     = RGBColor(80, 180, 215)   # #50B4D7
-CYAN_CONTAINER = RGBColor(16, 42, 65)     # #102A41
-CYAN_BORDER    = RGBColor(45, 95, 130)    # #2D5F82
+# Requested Primary Background Theme: Pure Cyan #00FFFF (RGB 0, 255, 255)
+BG_CYAN        = RGBColor(0, 255, 255)    # #00FFFF - Main slide canvas background
+BG_CYAN_LIGHT  = RGBColor(228, 252, 255)  # #E4FCFF - Subtle light tint for alternating table rows
+BG_CYAN_TINT   = RGBColor(198, 245, 255)  # #C6F5FF - Highlighted column / team card tint
 
-# Deep Background and Surfaces
-BG_DARK        = RGBColor(11, 17, 30)     # #0B111E - Deep navy canvas
-CARD_BG        = RGBColor(19, 30, 50)     # #131E32 - Card surface
-CARD_BORDER    = RGBColor(32, 48, 76)     # #20304C - Card border
-CARD_HOVER     = RGBColor(24, 38, 64)     # #182640
+# High-Contrast Typography Palette (optimized for #00FFFF canvas & white cards)
+NAVY_PRIMARY   = RGBColor(6, 24, 48)      # #061830 - Primary headings & slide titles
+NAVY_DEEP      = RGBColor(10, 32, 64)     # #0A2040 - Category supertitles
+COBALT_ACCENT  = RGBColor(0, 75, 165)     # #004BA5 - Card section titles & links
+TEXT_DARK      = RGBColor(20, 36, 56)     # #142438 - Primary body text
+TEXT_SLATE     = RGBColor(52, 72, 98)     # #344862 - Subtitles & descriptive body
 
-# Text colors
-TEXT_WHITE     = RGBColor(255, 255, 255)  # Headings & key metrics
-TEXT_MUTED     = RGBColor(148, 163, 184)  # #94A3B8 - Subtitles & body
-TEXT_DIM       = RGBColor(100, 116, 139)  # #64748B - Footnotes & tags
+# Container & Card Surfaces
+CARD_WHITE     = RGBColor(255, 255, 255)  # #FFFFFF - Crisp white card surface
+CARD_BORDER    = RGBColor(8, 38, 75)      # #08264B - Deep Navy border (1.2pt)
+CARD_BORDER_SOFT = RGBColor(30, 80, 130)  # #1E5082 - Soft secondary border
 
-# Accents for stats & highlights
-GREEN_ACCENT   = RGBColor(52, 211, 153)   # #34D399 - Success / Fast
-AMBER_ACCENT   = RGBColor(251, 191, 36)   # #FBBF24 - Warning / Pain point
-BLUE_DEEP      = RGBColor(30, 64, 175)    # #1E40AF
+# Dark Accent Containers (Hero badge, table headers, closing callout)
+CONTAINER_DARK = RGBColor(6, 24, 48)      # #061830 - Deep contrast container
+TEXT_ON_DARK   = RGBColor(255, 255, 255)  # #FFFFFF - Pure white text on dark cards
+CYAN_ON_DARK   = RGBColor(0, 255, 255)    # #00FFFF - Electric cyan text on dark cards
+CYAN_MUTED     = RGBColor(140, 230, 250)  # #8CE6FA - Soft cyan subtitle on dark cards
+
+# Semantic Accents
+GREEN_DARK     = RGBColor(10, 125, 65)    # Dark emerald green for winning benchmarks
+RED_DARK       = RGBColor(170, 20, 20)    # Dark crimson for pain points
+AMBER_DARK     = RGBColor(165, 90, 0)     # Dark amber for warning titles
 
 FONT_HEADING   = "Segoe UI"
 FONT_BODY      = "Segoe UI"
@@ -48,51 +53,51 @@ def create_deck(output_path: str, screenshots_dir: str):
     blank_layout = prs.slide_layouts[6]
 
     def add_slide_background(slide):
-        """Adds a full bleed dark background with a sleek cyan accent strip at top."""
+        """Adds a full bleed pure cyan background (#00FFFF) with a sleek deep navy top accent strip."""
         bg = slide.shapes.add_shape(MSO_SHAPE.RECTANGLE, 0, 0, Inches(13.333), Inches(7.5))
         bg.fill.solid()
-        bg.fill.fore_color.rgb = BG_DARK
+        bg.fill.fore_color.rgb = BG_CYAN
         bg.line.fill.background()
 
-        # Top cyan accent line
-        strip = slide.shapes.add_shape(MSO_SHAPE.RECTANGLE, 0, 0, Inches(13.333), Inches(0.06))
+        # Top deep navy accent line
+        strip = slide.shapes.add_shape(MSO_SHAPE.RECTANGLE, 0, 0, Inches(13.333), Inches(0.07))
         strip.fill.solid()
-        strip.fill.fore_color.rgb = CYAN_ACCENT
+        strip.fill.fore_color.rgb = NAVY_PRIMARY
         strip.line.fill.background()
 
     def add_header(slide, category: str, title: str, subtitle: str = ""):
-        """Adds consistent modern category tag, title and subtitle."""
-        tx_box = slide.shapes.add_textbox(Inches(0.8), Inches(0.35), Inches(11.733), Inches(1.1))
+        """Adds consistent high-contrast category tag, title and subtitle against the cyan canvas."""
+        tx_box = slide.shapes.add_textbox(Inches(0.8), Inches(0.35), Inches(11.733), Inches(1.15))
         tf = tx_box.text_frame
         tf.word_wrap = True
         tf.margin_left = tf.margin_top = tf.margin_right = tf.margin_bottom = 0
 
-        # Category pill text
+        # Category tag
         p0 = tf.paragraphs[0]
         p0.text = category.upper()
         p0.font.name = FONT_HEADING
-        p0.font.size = Pt(10.5)
+        p0.font.size = Pt(11)
         p0.font.bold = True
-        p0.font.color.rgb = CYAN_ACCENT
+        p0.font.color.rgb = COBALT_ACCENT
         p0.space_after = Pt(2)
 
-        # Main Title
+        # Main Title (Deep Navy on Cyan has 12.8:1 contrast ratio)
         p1 = tf.add_paragraph()
         p1.text = title
         p1.font.name = FONT_HEADING
         p1.font.size = Pt(22)
         p1.font.bold = True
-        p1.font.color.rgb = TEXT_WHITE
+        p1.font.color.rgb = NAVY_PRIMARY
         if subtitle:
             p1.space_after = Pt(2)
             p2 = tf.add_paragraph()
             p2.text = subtitle
             p2.font.name = FONT_BODY
             p2.font.size = Pt(12)
-            p2.font.color.rgb = TEXT_MUTED
+            p2.font.color.rgb = TEXT_DARK
 
-    def add_card(slide, left, top, width, height, bg_color=CARD_BG, border_color=CARD_BORDER):
-        """Creates a styled card container."""
+    def add_card(slide, left, top, width, height, bg_color=CARD_WHITE, border_color=CARD_BORDER):
+        """Creates a styled crisp container card."""
         card = slide.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE, left, top, width, height)
         card.fill.solid()
         card.fill.fore_color.rgb = bg_color
@@ -106,26 +111,26 @@ def create_deck(output_path: str, screenshots_dir: str):
     s1 = prs.slides.add_slide(blank_layout)
     add_slide_background(s1)
 
-    # Decorative background glows / card
+    # Hero card on pure cyan canvas
     hero_card = add_card(s1, Inches(0.8), Inches(0.8), Inches(11.733), Inches(5.9),
-                         bg_color=RGBColor(14, 23, 39), border_color=CYAN_BORDER)
+                         bg_color=CARD_WHITE, border_color=NAVY_PRIMARY)
 
-    # Hackathon badge
-    badge = s1.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE, Inches(1.3), Inches(1.25), Inches(4.2), Inches(0.42))
+    # Hackathon badge (Deep Navy container with pure Cyan text)
+    badge = s1.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE, Inches(1.3), Inches(1.2), Inches(4.3), Inches(0.42))
     badge.fill.solid()
-    badge.fill.fore_color.rgb = CYAN_CONTAINER
-    badge.line.color.rgb = CYAN_ACCENT
+    badge.fill.fore_color.rgb = CONTAINER_DARK
+    badge.line.color.rgb = NAVY_PRIMARY
     badge.line.width = Pt(1)
     b_tf = badge.text_frame
     b_tf.text = "⚡ iQOO HACKATHON 2026 · IDEA-SCREENING"
     b_tf.paragraphs[0].font.name = FONT_HEADING
     b_tf.paragraphs[0].font.size = Pt(11)
     b_tf.paragraphs[0].font.bold = True
-    b_tf.paragraphs[0].font.color.rgb = CYAN_ACCENT
+    b_tf.paragraphs[0].font.color.rgb = CYAN_ON_DARK
     b_tf.paragraphs[0].alignment = PP_ALIGN.CENTER
 
     # Project Title Box
-    title_box = s1.shapes.add_textbox(Inches(1.3), Inches(1.9), Inches(10.7), Inches(2.3))
+    title_box = s1.shapes.add_textbox(Inches(1.3), Inches(1.85), Inches(10.7), Inches(2.35))
     t_tf = title_box.text_frame
     t_tf.word_wrap = True
     t_tf.margin_left = t_tf.margin_top = t_tf.margin_right = t_tf.margin_bottom = 0
@@ -135,37 +140,37 @@ def create_deck(output_path: str, screenshots_dir: str):
     p_title.font.name = FONT_HEADING
     p_title.font.size = Pt(50)
     p_title.font.bold = True
-    p_title.font.color.rgb = CYAN_ACCENT
-    p_title.space_after = Pt(4)
+    p_title.font.color.rgb = NAVY_PRIMARY
+    p_title.space_after = Pt(3)
 
     p_sub = t_tf.add_paragraph()
     p_sub.text = "Context-Preserving Document & Typography Editor"
     p_sub.font.name = FONT_HEADING
     p_sub.font.size = Pt(22)
     p_sub.font.bold = True
-    p_sub.font.color.rgb = TEXT_WHITE
-    p_sub.space_after = Pt(10)
+    p_sub.font.color.rgb = COBALT_ACCENT
+    p_sub.space_after = Pt(8)
 
     p_desc = t_tf.add_paragraph()
     p_desc.text = "100% On-Device, NPU-Accelerated In-Place Text Editing on Flattened Images.\nEliminates Destructive Generative Hallucinations & Reconstructs Backgrounds in Real-Time."
     p_desc.font.name = FONT_BODY
     p_desc.font.size = Pt(13.5)
-    p_desc.font.color.rgb = TEXT_MUTED
+    p_desc.font.color.rgb = TEXT_DARK
 
-    # Team Box (Crucial user requirement: Krishan Gupta, Gourav Chakraborty)
-    team_card = add_card(s1, Inches(1.3), Inches(4.5), Inches(5.2), Inches(1.8),
-                         bg_color=RGBColor(20, 32, 54), border_color=CYAN_ACCENT)
+    # Team Card (Prominently featured: Krishan Gupta, Gourav Chakraborty)
+    team_card = add_card(s1, Inches(1.3), Inches(4.5), Inches(5.2), Inches(1.85),
+                         bg_color=BG_CYAN_TINT, border_color=NAVY_PRIMARY)
     team_tf = team_card.text_frame
     team_tf.word_wrap = True
     team_tf.margin_left = Inches(0.25)
-    team_tf.margin_top = Inches(0.2)
+    team_tf.margin_top = Inches(0.18)
 
     p_th = team_tf.paragraphs[0]
     p_th.text = "PROJECT TEAM & AUTHORS"
     p_th.font.name = FONT_HEADING
     p_th.font.size = Pt(10)
     p_th.font.bold = True
-    p_th.font.color.rgb = CYAN_ACCENT
+    p_th.font.color.rgb = COBALT_ACCENT
     p_th.space_after = Pt(4)
 
     p_t1 = team_tf.add_paragraph()
@@ -173,23 +178,23 @@ def create_deck(output_path: str, screenshots_dir: str):
     p_t1.font.name = FONT_HEADING
     p_t1.font.size = Pt(15)
     p_t1.font.bold = True
-    p_t1.font.color.rgb = TEXT_WHITE
+    p_t1.font.color.rgb = NAVY_PRIMARY
 
     p_t2 = team_tf.add_paragraph()
     p_t2.text = "• Gourav Chakraborty"
     p_t2.font.name = FONT_HEADING
     p_t2.font.size = Pt(15)
     p_t2.font.bold = True
-    p_t2.font.color.rgb = TEXT_WHITE
-    p_t2.space_after = Pt(4)
+    p_t2.font.color.rgb = NAVY_PRIMARY
+    p_t2.space_after = Pt(3)
 
     p_t3 = team_tf.add_paragraph()
     p_t3.text = "Target Hardware: iQOO 12 / Neo 9 Pro (Snapdragon Hexagon NPU)"
     p_t3.font.name = FONT_BODY
     p_t3.font.size = Pt(9.5)
-    p_t3.font.color.rgb = CYAN_MUTED
+    p_t3.font.color.rgb = TEXT_SLATE
 
-    # Pillars / Feature Pills
+    # Feature Spec Pills on the right
     pills_data = [
         ("⚡ Sub-40ms Pipeline", "OpenCV Fast Marching Telea inpainting"),
         ("🔒 100% Offline Manifest", "Zero network calls; sealed local data privacy"),
@@ -197,18 +202,19 @@ def create_deck(output_path: str, screenshots_dir: str):
         ("🎨 11-D Typography Match", "Auto-extracts weight, slant, color & kerning")
     ]
     for idx, (head, sub) in enumerate(pills_data):
-        col_top = Inches(4.5) + (idx * Inches(0.44))
-        p_card = add_card(s1, Inches(6.8), col_top, Inches(5.2), Inches(0.38),
-                          bg_color=RGBColor(16, 26, 44), border_color=CARD_BORDER)
+        col_top = Inches(4.5) + (idx * Inches(0.45))
+        p_card = add_card(s1, Inches(6.8), col_top, Inches(5.2), Inches(0.39),
+                          bg_color=BG_CYAN_LIGHT, border_color=CARD_BORDER_SOFT)
         p_tf = p_card.text_frame
         p_tf.word_wrap = True
-        p_tf.margin_left = Inches(0.15)
+        p_tf.margin_left = Inches(0.18)
         p_tf.margin_top = Inches(0.06)
         para = p_tf.paragraphs[0]
         para.text = f"{head}  —  {sub}"
         para.font.name = FONT_BODY
         para.font.size = Pt(10)
-        para.font.color.rgb = CYAN_BRIGHT
+        para.font.bold = True
+        para.font.color.rgb = NAVY_PRIMARY
 
     # =========================================================================
     # SLIDE 2: THE PROBLEM STATEMENT & MARKET GAP
@@ -230,7 +236,7 @@ def create_deck(output_path: str, screenshots_dir: str):
 
     for i, (title, desc) in enumerate(problems):
         c = add_card(s2, Inches(0.8 + i * 4.0), Inches(1.75), Inches(3.7), Inches(3.9),
-                     border_color=CARD_BORDER if i != 0 else AMBER_ACCENT)
+                     border_color=CARD_BORDER if i != 0 else RED_DARK)
         ctf = c.text_frame
         ctf.word_wrap = True
         ctf.margin_left = ctf.margin_right = Inches(0.3)
@@ -241,18 +247,18 @@ def create_deck(output_path: str, screenshots_dir: str):
         p.font.name = FONT_HEADING
         p.font.size = Pt(16)
         p.font.bold = True
-        p.font.color.rgb = AMBER_ACCENT if i == 0 else (CYAN_ACCENT if i == 1 else TEXT_WHITE)
+        p.font.color.rgb = RED_DARK if i == 0 else (COBALT_ACCENT if i == 1 else NAVY_PRIMARY)
         p.space_after = Pt(14)
 
         p2 = ctf.add_paragraph()
         p2.text = desc
         p2.font.name = FONT_BODY
         p2.font.size = Pt(13)
-        p2.font.color.rgb = TEXT_MUTED
+        p2.font.color.rgb = TEXT_DARK
 
-    # Bottom Stat Banner
+    # Bottom Stat Banner (Deep Navy on Cyan with Cyan Accent)
     stat_card = add_card(s2, Inches(0.8), Inches(5.9), Inches(11.733), Inches(1.1),
-                         bg_color=CYAN_CONTAINER, border_color=CYAN_ACCENT)
+                         bg_color=CONTAINER_DARK, border_color=NAVY_PRIMARY)
     sc_tf = stat_card.text_frame
     sc_tf.word_wrap = True
     sc_tf.margin_left = Inches(0.4)
@@ -262,7 +268,7 @@ def create_deck(output_path: str, screenshots_dir: str):
     p_sc.font.name = FONT_HEADING
     p_sc.font.size = Pt(13.5)
     p_sc.font.bold = True
-    p_sc.font.color.rgb = CYAN_ACCENT
+    p_sc.font.color.rgb = CYAN_ON_DARK
 
     # =========================================================================
     # SLIDE 3: THE SOLUTION - TEXTRACT
@@ -296,14 +302,14 @@ def create_deck(output_path: str, screenshots_dir: str):
         p.font.name = FONT_HEADING
         p.font.size = Pt(17)
         p.font.bold = True
-        p.font.color.rgb = CYAN_ACCENT
+        p.font.color.rgb = COBALT_ACCENT
         p.space_after = Pt(8)
 
         p2 = ctf.add_paragraph()
         p2.text = desc
         p2.font.name = FONT_BODY
         p2.font.size = Pt(13)
-        p2.font.color.rgb = TEXT_MUTED
+        p2.font.color.rgb = TEXT_DARK
 
     # =========================================================================
     # SLIDE 4: SYSTEM ARCHITECTURE & DATA FLOW
@@ -326,7 +332,7 @@ def create_deck(output_path: str, screenshots_dir: str):
     for i, (st, desc) in enumerate(arch_steps):
         top_pos = Inches(1.7 + i * 1.05)
         card = add_card(s4, Inches(0.8), top_pos, Inches(5.9), Inches(0.95),
-                        border_color=CYAN_BORDER if i == 1 else CARD_BORDER)
+                        border_color=COBALT_ACCENT if i == 1 else CARD_BORDER)
         ctf = card.text_frame
         ctf.word_wrap = True
         ctf.margin_left = Inches(0.2)
@@ -336,28 +342,27 @@ def create_deck(output_path: str, screenshots_dir: str):
         p.font.name = FONT_HEADING
         p.font.size = Pt(13)
         p.font.bold = True
-        p.font.color.rgb = CYAN_ACCENT
+        p.font.color.rgb = COBALT_ACCENT
 
         p2 = ctf.add_paragraph()
         p2.text = desc
         p2.font.name = FONT_BODY
         p2.font.size = Pt(10.5)
-        p2.font.color.rgb = TEXT_MUTED
+        p2.font.color.rgb = TEXT_DARK
 
     # Right: Embedded Screenshot 1 (Desktop Overview / Architecture UI)
     sc1_path = os.path.join(screenshots_dir, "screenshot_1.jpeg")
     if os.path.exists(sc1_path):
         frame = add_card(s4, Inches(7.0), Inches(1.7), Inches(5.5), Inches(4.7),
-                         bg_color=RGBColor(14, 23, 39), border_color=CYAN_ACCENT)
-        # Embed screenshot
+                         bg_color=CARD_WHITE, border_color=NAVY_PRIMARY)
         s4.shapes.add_picture(sc1_path, Inches(7.05), Inches(1.75), width=Inches(5.4))
-        # Caption below screenshot
         cap = s4.shapes.add_textbox(Inches(7.0), Inches(6.5), Inches(5.5), Inches(0.4))
         cap_tf = cap.text_frame
         cap_tf.text = "Figure 1: Textract End-to-End Live System Interface (Document Canvas & Profiler)"
         cap_tf.paragraphs[0].font.name = FONT_BODY
         cap_tf.paragraphs[0].font.size = Pt(10)
-        cap_tf.paragraphs[0].font.color.rgb = CYAN_MUTED
+        cap_tf.paragraphs[0].font.bold = True
+        cap_tf.paragraphs[0].font.color.rgb = NAVY_PRIMARY
         cap_tf.paragraphs[0].alignment = PP_ALIGN.CENTER
 
     # =========================================================================
@@ -394,26 +399,27 @@ def create_deck(output_path: str, screenshots_dir: str):
         p.font.name = FONT_HEADING
         p.font.size = Pt(14)
         p.font.bold = True
-        p.font.color.rgb = CYAN_ACCENT
+        p.font.color.rgb = COBALT_ACCENT
 
         p2 = ctf.add_paragraph()
         p2.text = desc
         p2.font.name = FONT_BODY
         p2.font.size = Pt(11)
-        p2.font.color.rgb = TEXT_MUTED
+        p2.font.color.rgb = TEXT_DARK
 
     # Right: Embedded Screenshot 6 (Live Typography Profiler UI Panel)
     sc6_path = os.path.join(screenshots_dir, "screenshot_6.jpeg")
     if os.path.exists(sc6_path):
         frame = add_card(s5, Inches(8.0), Inches(1.7), Inches(4.533), Inches(4.7),
-                         bg_color=RGBColor(14, 23, 39), border_color=CYAN_ACCENT)
+                         bg_color=CARD_WHITE, border_color=NAVY_PRIMARY)
         s5.shapes.add_picture(sc6_path, Inches(8.4), Inches(1.8), height=Inches(4.4))
         cap = s5.shapes.add_textbox(Inches(8.0), Inches(6.5), Inches(4.533), Inches(0.4))
         cap_tf = cap.text_frame
         cap_tf.text = "Figure 2: Textract Auto-Extracted Typography Attributes Panel"
         cap_tf.paragraphs[0].font.name = FONT_BODY
         cap_tf.paragraphs[0].font.size = Pt(10)
-        cap_tf.paragraphs[0].font.color.rgb = CYAN_MUTED
+        cap_tf.paragraphs[0].font.bold = True
+        cap_tf.paragraphs[0].font.color.rgb = NAVY_PRIMARY
         cap_tf.paragraphs[0].alignment = PP_ALIGN.CENTER
 
     # =========================================================================
@@ -437,14 +443,14 @@ def create_deck(output_path: str, screenshots_dir: str):
     p.font.name = FONT_HEADING
     p.font.size = Pt(16)
     p.font.bold = True
-    p.font.color.rgb = AMBER_ACCENT
+    p.font.color.rgb = RED_DARK
     p.space_after = Pt(4)
 
     p_body = cl_tf.add_paragraph()
     p_body.text = "Traditional tools wipe entire rectangular bounding boxes, destroying underlying wood grains, mesh gradients, or decorative lines.\n"
     p_body.font.name = FONT_BODY
     p_body.font.size = Pt(11.5)
-    p_body.font.color.rgb = TEXT_MUTED
+    p_body.font.color.rgb = TEXT_DARK
     p_body.space_after = Pt(10)
 
     p_sol = cl_tf.add_paragraph()
@@ -452,7 +458,7 @@ def create_deck(output_path: str, screenshots_dir: str):
     p_sol.font.name = FONT_HEADING
     p_sol.font.size = Pt(16)
     p_sol.font.bold = True
-    p_sol.font.color.rgb = CYAN_ACCENT
+    p_sol.font.color.rgb = COBALT_ACCENT
     p_sol.space_after = Pt(6)
 
     adv_points = [
@@ -466,21 +472,22 @@ def create_deck(output_path: str, screenshots_dir: str):
         p_pt.text = pt
         p_pt.font.name = FONT_BODY
         p_pt.font.size = Pt(11)
-        p_pt.font.color.rgb = TEXT_WHITE
+        p_pt.font.color.rgb = NAVY_PRIMARY
         p_pt.space_after = Pt(4)
 
     # Right: Embedded Screenshot 7 (Split View Before/After Comparison)
     sc7_path = os.path.join(screenshots_dir, "screenshot_7.jpeg")
     if os.path.exists(sc7_path):
         frame = add_card(s6, Inches(6.6), Inches(1.7), Inches(5.9), Inches(4.7),
-                         bg_color=RGBColor(14, 23, 39), border_color=CYAN_ACCENT)
+                         bg_color=CARD_WHITE, border_color=NAVY_PRIMARY)
         s6.shapes.add_picture(sc7_path, Inches(6.65), Inches(1.75), width=Inches(5.8))
         cap = s6.shapes.add_textbox(Inches(6.6), Inches(6.5), Inches(5.9), Inches(0.4))
         cap_tf = cap.text_frame
-        cap_tf.text = "Figure 2: Textract Before/After Split Comparison Showing Pixel-Perfect Background Retention"
+        cap_tf.text = "Figure 3: Textract Before/After Split Comparison Showing Pixel-Perfect Background Retention"
         cap_tf.paragraphs[0].font.name = FONT_BODY
         cap_tf.paragraphs[0].font.size = Pt(10)
-        cap_tf.paragraphs[0].font.color.rgb = CYAN_MUTED
+        cap_tf.paragraphs[0].font.bold = True
+        cap_tf.paragraphs[0].font.color.rgb = NAVY_PRIMARY
         cap_tf.paragraphs[0].alignment = PP_ALIGN.CENTER
 
     # =========================================================================
@@ -516,28 +523,29 @@ def create_deck(output_path: str, screenshots_dir: str):
         p.font.name = FONT_HEADING
         p.font.size = Pt(15)
         p.font.bold = True
-        p.font.color.rgb = CYAN_ACCENT
+        p.font.color.rgb = COBALT_ACCENT
         p.space_after = Pt(2)
 
         p2 = cux_tf.add_paragraph()
         p2.text = desc
         p2.font.name = FONT_BODY
         p2.font.size = Pt(11)
-        p2.font.color.rgb = TEXT_MUTED
+        p2.font.color.rgb = TEXT_DARK
         p2.space_after = Pt(10)
 
     # Right: Embedded Screenshot 5 (Inline Editor with Handles & Controls)
     sc5_path = os.path.join(screenshots_dir, "screenshot_5.jpeg")
     if os.path.exists(sc5_path):
         frame = add_card(s7, Inches(7.3), Inches(1.7), Inches(5.2), Inches(5.2),
-                         bg_color=RGBColor(14, 23, 39), border_color=CYAN_ACCENT)
+                         bg_color=CARD_WHITE, border_color=NAVY_PRIMARY)
         s7.shapes.add_picture(sc5_path, Inches(7.5), Inches(1.85), height=Inches(4.5))
         cap = s7.shapes.add_textbox(Inches(7.3), Inches(6.55), Inches(5.2), Inches(0.4))
         cap_tf = cap.text_frame
-        cap_tf.text = "Figure 3: 8-Way Interactive Resize Handles & In-Place Inline Editor"
+        cap_tf.text = "Figure 4: 8-Directional Resize Handles & In-Place Inline Editor"
         cap_tf.paragraphs[0].font.name = FONT_BODY
         cap_tf.paragraphs[0].font.size = Pt(10)
-        cap_tf.paragraphs[0].font.color.rgb = CYAN_MUTED
+        cap_tf.paragraphs[0].font.bold = True
+        cap_tf.paragraphs[0].font.color.rgb = NAVY_PRIMARY
         cap_tf.paragraphs[0].alignment = PP_ALIGN.CENTER
 
     # =========================================================================
@@ -552,16 +560,16 @@ def create_deck(output_path: str, screenshots_dir: str):
     features = [
         ("Before/After Split Slider",
          "Draggable interactive comparison divider.\nProvides instant visual proof of background pixel retention and seamless blending.",
-         CYAN_ACCENT),
+         COBALT_ACCENT),
         ("Draw-to-Edit Mode",
          "Manual bounding box selection for artistic, un-detected, or stylized cursive text regions with instant inpainting.",
-         TEXT_WHITE),
+         NAVY_PRIMARY),
         ("Batch Multi-Document Edit",
          "Global find-and-replace dialog across multiple flyers simultaneously; update prices & event dates in seconds.",
-         CYAN_ACCENT),
+         COBALT_ACCENT),
         ("Multi-Level Undo/Redo",
          "Non-destructive EditHistoryManager stack.\nStep-by-step undo/redo with instant 1-click restore to original document state.",
-         TEXT_WHITE)
+         NAVY_PRIMARY)
     ]
 
     for i, (title, desc, color) in enumerate(features):
@@ -587,7 +595,7 @@ def create_deck(output_path: str, screenshots_dir: str):
         p2.text = desc
         p2.font.name = FONT_BODY
         p2.font.size = Pt(12)
-        p2.font.color.rgb = TEXT_MUTED
+        p2.font.color.rgb = TEXT_DARK
 
     # =========================================================================
     # SLIDE 9: BENCHMARKS - 100X FASTER THAN CLOUD GENAI
@@ -609,7 +617,6 @@ def create_deck(output_path: str, screenshots_dir: str):
     table_shape = s9.shapes.add_table(rows, cols, left, top, width, height)
     table = table_shape.table
 
-    # Column widths
     table.columns[0].width = Inches(2.8)
     table.columns[1].width = Inches(2.9)
     table.columns[2].width = Inches(2.9)
@@ -619,13 +626,13 @@ def create_deck(output_path: str, screenshots_dir: str):
     for col_idx, h_text in enumerate(headers):
         cell = table.cell(0, col_idx)
         cell.fill.solid()
-        cell.fill.fore_color.rgb = CYAN_CONTAINER if col_idx == 3 else RGBColor(16, 26, 44)
+        cell.fill.fore_color.rgb = COBALT_ACCENT if col_idx == 3 else CONTAINER_DARK
         p = cell.text_frame.paragraphs[0]
         p.text = h_text
         p.font.name = FONT_HEADING
         p.font.size = Pt(12.5)
         p.font.bold = True
-        p.font.color.rgb = CYAN_ACCENT if col_idx == 3 else TEXT_WHITE
+        p.font.color.rgb = CYAN_ON_DARK if col_idx == 3 else TEXT_ON_DARK
         p.alignment = PP_ALIGN.CENTER
 
     data = [
@@ -642,27 +649,27 @@ def create_deck(output_path: str, screenshots_dir: str):
             cell = table.cell(row_idx + 1, col_idx)
             cell.fill.solid()
             if col_idx == 3:
-                cell.fill.fore_color.rgb = RGBColor(18, 38, 62)  # highlighted column
+                cell.fill.fore_color.rgb = BG_CYAN_TINT  # highlighted column
             else:
-                cell.fill.fore_color.rgb = CARD_BG if row_idx % 2 == 0 else RGBColor(15, 23, 38)
+                cell.fill.fore_color.rgb = CARD_WHITE if row_idx % 2 == 0 else BG_CYAN_LIGHT
             p = cell.text_frame.paragraphs[0]
             p.text = text
             p.font.name = FONT_BODY
             p.font.size = Pt(11.5)
             if col_idx == 0:
                 p.font.bold = True
-                p.font.color.rgb = TEXT_WHITE
+                p.font.color.rgb = NAVY_PRIMARY
             elif col_idx == 3:
                 p.font.bold = True
-                p.font.color.rgb = GREEN_ACCENT if "40" in text or "0.00" in text or "0%" in text or "100%" in text or "14" in text else CYAN_ACCENT
+                p.font.color.rgb = GREEN_DARK if "40" in text or "0.00" in text or "0%" in text or "100%" in text or "14" in text else COBALT_ACCENT
                 p.alignment = PP_ALIGN.CENTER
             else:
-                p.font.color.rgb = TEXT_MUTED
+                p.font.color.rgb = TEXT_DARK
                 p.alignment = PP_ALIGN.CENTER
 
     # Bottom summary
     sum_card = add_card(s9, Inches(0.8), Inches(6.4), Inches(11.733), Inches(0.65),
-                        bg_color=RGBColor(16, 26, 44), border_color=CYAN_BORDER)
+                        bg_color=CONTAINER_DARK, border_color=NAVY_PRIMARY)
     stf = sum_card.text_frame
     stf.margin_left = Inches(0.3)
     stf.margin_top = Inches(0.12)
@@ -671,7 +678,7 @@ def create_deck(output_path: str, screenshots_dir: str):
     p_sum.font.name = FONT_HEADING
     p_sum.font.size = Pt(11.5)
     p_sum.font.bold = True
-    p_sum.font.color.rgb = CYAN_ACCENT
+    p_sum.font.color.rgb = CYAN_ON_DARK
 
     # =========================================================================
     # SLIDE 10: HARDWARE ACCELERATION - iQOO & SNAPDRAGON NPU
@@ -703,14 +710,14 @@ def create_deck(output_path: str, screenshots_dir: str):
         p.font.name = FONT_HEADING
         p.font.size = Pt(17)
         p.font.bold = True
-        p.font.color.rgb = CYAN_ACCENT
+        p.font.color.rgb = COBALT_ACCENT
         p.space_after = Pt(14)
 
         p2 = ctf.add_paragraph()
         p2.text = desc
         p2.font.name = FONT_BODY
         p2.font.size = Pt(13)
-        p2.font.color.rgb = TEXT_MUTED
+        p2.font.color.rgb = TEXT_DARK
 
     # =========================================================================
     # SLIDE 11: REAL-WORLD ENTERPRISE VERTICALS
@@ -748,14 +755,14 @@ def create_deck(output_path: str, screenshots_dir: str):
         p.font.name = FONT_HEADING
         p.font.size = Pt(17)
         p.font.bold = True
-        p.font.color.rgb = CYAN_ACCENT
+        p.font.color.rgb = COBALT_ACCENT
         p.space_after = Pt(8)
 
         p2 = ctf.add_paragraph()
         p2.text = desc
         p2.font.name = FONT_BODY
         p2.font.size = Pt(12)
-        p2.font.color.rgb = TEXT_MUTED
+        p2.font.color.rgb = TEXT_DARK
 
     # =========================================================================
     # SLIDE 12: ROADMAP & CONCLUSION
@@ -777,7 +784,7 @@ def create_deck(output_path: str, screenshots_dir: str):
 
     for i, (title, desc) in enumerate(phases):
         c = add_card(s12, Inches(0.8 + i * 4.0), Inches(1.75), Inches(3.7), Inches(3.6),
-                     border_color=CYAN_ACCENT if i == 0 else CARD_BORDER)
+                     border_color=COBALT_ACCENT if i == 0 else CARD_BORDER)
         ctf = c.text_frame
         ctf.word_wrap = True
         ctf.margin_left = ctf.margin_right = Inches(0.25)
@@ -788,18 +795,18 @@ def create_deck(output_path: str, screenshots_dir: str):
         p.font.name = FONT_HEADING
         p.font.size = Pt(14)
         p.font.bold = True
-        p.font.color.rgb = CYAN_ACCENT if i == 0 else TEXT_WHITE
+        p.font.color.rgb = COBALT_ACCENT if i == 0 else NAVY_PRIMARY
         p.space_after = Pt(10)
 
         p2 = ctf.add_paragraph()
         p2.text = desc
         p2.font.name = FONT_BODY
         p2.font.size = Pt(11)
-        p2.font.color.rgb = TEXT_MUTED
+        p2.font.color.rgb = TEXT_DARK
 
     # Bottom Final Callout Box (Team and summary)
     callout = add_card(s12, Inches(0.8), Inches(5.6), Inches(11.733), Inches(1.4),
-                       bg_color=CYAN_CONTAINER, border_color=CYAN_ACCENT)
+                       bg_color=CONTAINER_DARK, border_color=NAVY_PRIMARY)
     c_tf = callout.text_frame
     c_tf.word_wrap = True
     c_tf.margin_left = Inches(0.3)
@@ -810,14 +817,14 @@ def create_deck(output_path: str, screenshots_dir: str):
     p_c1.font.name = FONT_HEADING
     p_c1.font.size = Pt(16)
     p_c1.font.bold = True
-    p_c1.font.color.rgb = CYAN_ACCENT
+    p_c1.font.color.rgb = CYAN_ON_DARK
 
     p_c2 = c_tf.add_paragraph()
     p_c2.text = "iQOO Hackathon 2026 Submission  |  Project: Textract  |  Teammates: Krishan Gupta, Gourav Chakraborty"
     p_c2.font.name = FONT_BODY
     p_c2.font.size = Pt(13)
     p_c2.font.bold = True
-    p_c2.font.color.rgb = TEXT_WHITE
+    p_c2.font.color.rgb = TEXT_ON_DARK
     p_c2.space_after = Pt(2)
 
     p_c3 = c_tf.add_paragraph()

@@ -9,6 +9,8 @@ class TextractSimulator {
     this.regionsList = document.getElementById('regions-list');
     this.regionCountBadge = document.getElementById('region-count-badge');
     this.canvasContainer = document.getElementById('canvas-container');
+    this.canvasWrapper = document.getElementById('canvas-wrapper');
+    this.uploadHeroZone = document.getElementById('upload-hero-zone');
     this.drawSelectionBox = document.getElementById('draw-selection-box');
     
     // Inline Editor & Floating Formatting Toolbar
@@ -48,7 +50,8 @@ class TextractSimulator {
     this.zoomLevel = 1.0;
     this.cameraStream = null;
 
-    this.currentTemplate = 'aws_sample';
+    this.hasDocument = false;
+    this.currentTemplate = null;
     this.ocrGranularity = 'all';
     this.rawOcrData = null;
 
@@ -70,7 +73,9 @@ class TextractSimulator {
     // Granularity / Sensitivity selector
     document.getElementById('ocr-granularity-select').addEventListener('change', (e) => {
       this.ocrGranularity = e.target.value;
-      this.runRealOcrDetection();
+      if (this.hasDocument) {
+        this.runRealOcrDetection();
+      }
     });
 
     // File input & Camera
@@ -79,6 +84,72 @@ class TextractSimulator {
     document.getElementById('btn-camera-close').addEventListener('click', () => this.closeCameraModal());
     document.getElementById('btn-camera-cancel').addEventListener('click', () => this.closeCameraModal());
     document.getElementById('btn-camera-snap').addEventListener('click', () => this.snapCameraPhoto());
+
+    // Upload hero buttons & triggers
+    const triggerUpload = () => document.getElementById('file-input').click();
+    const btnHeroUpload = document.getElementById('btn-hero-upload');
+    if (btnHeroUpload) btnHeroUpload.addEventListener('click', triggerUpload);
+    const btnToolbarUpload = document.getElementById('btn-toolbar-upload');
+    if (btnToolbarUpload) btnToolbarUpload.addEventListener('click', triggerUpload);
+
+    const btnHeroCamera = document.getElementById('btn-hero-camera');
+    if (btnHeroCamera) btnHeroCamera.addEventListener('click', () => this.openCameraModal());
+
+    const btnCloseDoc = document.getElementById('btn-close-doc');
+    if (btnCloseDoc) btnCloseDoc.addEventListener('click', () => this.showUploadZone());
+
+    // Preset Pill Buttons
+    document.querySelectorAll('.preset-pill-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const preset = btn.getAttribute('data-preset');
+        if (preset) this.loadTemplate(preset);
+      });
+    });
+
+    // Drag-and-Drop on Canvas Area
+    if (this.canvasWrapper) {
+      ['dragenter', 'dragover'].forEach(eventName => {
+        this.canvasWrapper.addEventListener(eventName, (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          this.canvasWrapper.classList.add('drag-active');
+        });
+      });
+
+      ['dragleave', 'drop'].forEach(eventName => {
+        this.canvasWrapper.addEventListener(eventName, (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          this.canvasWrapper.classList.remove('drag-active');
+        });
+      });
+
+      this.canvasWrapper.addEventListener('drop', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        this.canvasWrapper.classList.remove('drag-active');
+        if (e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0]) {
+          this.loadImageFromFile(e.dataTransfer.files[0]);
+        }
+      });
+    }
+
+    // Direct Image Paste from Clipboard (Ctrl+V)
+    window.addEventListener('paste', (e) => {
+      if (this.selectedRegion) return;
+      const items = (e.clipboardData || e.originalEvent?.clipboardData)?.items;
+      if (!items) return;
+      for (let i = 0; i < items.length; i++) {
+        if (items[i].type && items[i].type.startsWith('image/')) {
+          const file = items[i].getAsFile();
+          if (file) {
+            e.preventDefault();
+            this.loadImageFromFile(file);
+            break;
+          }
+        }
+      }
+    });
 
     // Batch modal
     document.getElementById('btn-open-batch').addEventListener('click', () => this.openBatchModal());
@@ -571,10 +642,12 @@ class TextractSimulator {
     this.currentTemplate = templateType;
     this.closeInlineEditing();
 
-    if (templateType === 'aws_sample') {
-      this.renderAwsSampleTemplate();
+    if (templateType === 'demo_flyer') {
+      this.renderDemoFlyerTemplate();
       return;
     }
+
+    this.showCanvasWorkspace();
 
     const width = 800;
     const height = 1000;
@@ -595,7 +668,8 @@ class TextractSimulator {
     this.saveInitialState();
   }
 
-  renderAwsSampleTemplate() {
+  renderDemoFlyerTemplate() {
+    this.showCanvasWorkspace();
     const img = new Image();
     img.onload = async () => {
       this.canvas.width = img.width;
@@ -605,7 +679,10 @@ class TextractSimulator {
       await this.runRealOcrDetection();
       this.saveInitialState();
     };
-    img.src = 'sample_aws.png';
+    img.onerror = () => {
+      this.loadTemplate('poster');
+    };
+    img.src = 'demo_flyer.jpg';
   }
 
   saveCleanBackground() {
@@ -971,9 +1048,11 @@ class TextractSimulator {
     document.head.appendChild(link);
   }
 
-  async handleImageUpload(e) {
-    const file = e.target.files[0];
-    if (!file) return;
+  async loadImageFromFile(file) {
+    if (!file || !(file.type && file.type.startsWith('image/'))) {
+      alert('Please select a valid image file (PNG, JPG, WEBP).');
+      return;
+    }
 
     this.closeInlineEditing();
     const img = new Image();
@@ -983,10 +1062,66 @@ class TextractSimulator {
       this.ctx.drawImage(img, 0, 0);
 
       this.cleanBackgroundData = this.ctx.getImageData(0, 0, this.canvas.width, this.canvas.height);
+      this.showCanvasWorkspace();
       await this.runRealOcrDetection();
       this.saveInitialState();
     };
+    img.onerror = () => {
+      alert('Failed to load this image file. Please try another image.');
+    };
     img.src = URL.createObjectURL(file);
+  }
+
+  async handleImageUpload(e) {
+    const file = e.target.files && e.target.files[0];
+    if (!file) return;
+    await this.loadImageFromFile(file);
+    e.target.value = '';
+  }
+
+  showCanvasWorkspace() {
+    this.hasDocument = true;
+    const heroZone = document.getElementById('upload-hero-zone');
+    if (heroZone) heroZone.classList.add('hidden');
+    if (this.canvasContainer) this.canvasContainer.classList.remove('hidden');
+    const closeBtn = document.getElementById('btn-close-doc');
+    if (closeBtn) closeBtn.classList.remove('hidden');
+
+    const helperText = document.getElementById('helper-hint-text');
+    if (helperText) {
+      helperText.innerHTML = '<strong>Click any text box</strong> on the flyer to open the instant inline editor! The exact font, color, weight, and size will automatically match.';
+    }
+
+    this.updateControlsState();
+  }
+
+  showUploadZone() {
+    this.hasDocument = false;
+    this.currentTemplate = null;
+    this.closeInlineEditing();
+
+    const heroZone = document.getElementById('upload-hero-zone');
+    if (heroZone) heroZone.classList.remove('hidden');
+    if (this.canvasContainer) this.canvasContainer.classList.add('hidden');
+    const closeBtn = document.getElementById('btn-close-doc');
+    if (closeBtn) closeBtn.classList.add('hidden');
+
+    const helperText = document.getElementById('helper-hint-text');
+    if (helperText) {
+      helperText.innerHTML = '<strong>Import or drop an image</strong> below to automatically detect text, typography, and fonts!';
+    }
+
+    this.textRegions = [];
+    this.undoStack = [];
+    this.redoStack = [];
+    this.selectedRegion = null;
+    this.originalBitmapData = null;
+    this.cleanBackgroundData = null;
+    this.rawOcrData = null;
+
+    this.renderOverlays();
+    this.renderRegionsList();
+    this.updateControlsState();
   }
 
   async runRealOcrDetection() {
@@ -1817,6 +1952,7 @@ class TextractSimulator {
     this.ctx.drawImage(video, 0, 0, this.canvas.width, this.canvas.height);
 
     this.closeCameraModal();
+    this.showCanvasWorkspace();
     await this.runRealOcrDetection();
     this.saveInitialState();
   }
@@ -1838,13 +1974,27 @@ class TextractSimulator {
   }
 
   updateControlsState() {
-    document.getElementById('btn-undo').disabled = this.undoStack.length <= 1;
-    document.getElementById('btn-redo').disabled = this.redoStack.length === 0;
-    document.getElementById('btn-export').disabled = this.textRegions.length === 0;
+    const hasDoc = !!this.hasDocument;
+    const btnUndo = document.getElementById('btn-undo');
+    if (btnUndo) btnUndo.disabled = !hasDoc || this.undoStack.length <= 1;
+    const btnRedo = document.getElementById('btn-redo');
+    if (btnRedo) btnRedo.disabled = !hasDoc || this.redoStack.length === 0;
+    const btnDraw = document.getElementById('btn-draw-mode');
+    if (btnDraw) btnDraw.disabled = !hasDoc;
+    const btnComp = document.getElementById('btn-compare');
+    if (btnComp) btnComp.disabled = !hasDoc;
+    const btnReset = document.getElementById('btn-reset-original');
+    if (btnReset) btnReset.disabled = !hasDoc;
+    const btnExport = document.getElementById('btn-export');
+    if (btnExport) btnExport.disabled = !hasDoc || this.textRegions.length === 0;
+    const btnZoomIn = document.getElementById('btn-zoom-in');
+    if (btnZoomIn) btnZoomIn.disabled = !hasDoc;
+    const btnZoomOut = document.getElementById('btn-zoom-out');
+    if (btnZoomOut) btnZoomOut.disabled = !hasDoc;
   }
 }
 
 window.addEventListener('DOMContentLoaded', () => {
   window.simulator = new TextractSimulator();
-  window.simulator.loadTemplate('aws_sample');
+  window.simulator.showUploadZone();
 });
