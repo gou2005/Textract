@@ -50,15 +50,25 @@
           </div>
 
           <div class="btn-group">
-            <label class="btn btn-primary file-label">
-              <span>📁 IMPORT CUSTOM IMAGE</span>
+            <label class="btn btn-primary file-label" for="file-input">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" stroke="none" style="flex-shrink: 0;">
+                <path d="M10 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z"/>
+              </svg>
+              <span>IMPORT CUSTOM IMAGE</span>
               <input type="file" id="file-input" accept="image/*" class="hidden-input">
             </label>
             <button id="btn-camera-capture" class="btn btn-secondary">
-              <span>📷 CAPTURE PHOTO</span>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0;">
+                <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
+                <circle cx="12" cy="13" r="4"></circle>
+              </svg>
+              <span>CAPTURE PHOTO</span>
             </button>
             <button id="btn-open-batch" class="btn btn-secondary">
-              <span>⚡ BATCH MULTI-EDIT MODE</span>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0;">
+                <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+              </svg>
+              <span>BATCH MULTI-EDIT MODE</span>
             </button>
           </div>
         </div>
@@ -141,7 +151,12 @@
               <button id="btn-zoom-in" class="btn-tool" title="Zoom In">+</button>
             </div>
             <button id="btn-export" class="btn btn-accent" disabled>
-              <span>💾 Save / Export Image</span>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0;">
+                <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+                <polyline points="17 21 17 13 7 13 7 21"></polyline>
+                <polyline points="7 3 7 8 15 8"></polyline>
+              </svg>
+              <span>SAVE / EXPORT IMAGE</span>
             </button>
           </div>
         </div>
@@ -198,12 +213,12 @@
                     <input type="color" id="inline-color-picker" value="#FFFFFF" class="color-input-hidden">
                   </label>
                   <div class="quick-swatches" id="quick-swatches">
-                    <button type="button" class="swatch-dot" data-color="#1C69D4" style="background: #1C69D4" title="Primary Blue"></button>
+                    <button type="button" class="swatch-dot" data-color="#FFCE00" style="background: #FFCE00" title="iQOO Yellow"></button>
                     <button type="button" class="swatch-dot" data-color="#FFFFFF" style="background: #FFFFFF" title="Canvas White"></button>
-                    <button type="button" class="swatch-dot" data-color="#262626" style="background: #262626" title="Dark Gray"></button>
-                    <button type="button" class="swatch-dot" data-color="#E22718" style="background: #E22718" title="Accent Red"></button>
-                    <button type="button" class="swatch-dot" data-color="#0066B1" style="background: #0066B1" title="Light Blue"></button>
-                    <button type="button" class="swatch-dot" data-color="#F59E0B" style="background: #F59E0B" title="Warning Amber"></button>
+                    <button type="button" class="swatch-dot" data-color="#121212" style="background: #121212" title="Carbon Black"></button>
+                    <button type="button" class="swatch-dot" data-color="#F3727F" style="background: #F3727F" title="Accent Red"></button>
+                    <button type="button" class="swatch-dot" data-color="#539DF5" style="background: #539DF5" title="Electric Blue"></button>
+                    <button type="button" class="swatch-dot" data-color="#1ED760" style="background: #1ED760" title="Neon Green"></button>
                   </div>
                 </div>
 
