@@ -1,6 +1,5 @@
-# Virtual environments & Python cache
-backend/venv/
-backend/.venv/
+# Python Backend (runs locally or on container platforms, not in Vercel serverless)
+backend/
 **/venv/
 **/.venv/
 **/__pycache__/
@@ -18,7 +17,7 @@ build/
 *.aab
 .idea/
 
-# Large assets and presentation decks
+# Large assets, scripts and presentation decks
 *.pptx
 Textract_iQOO_Hackathon_2026.pptx
 extracted_screenshots/
