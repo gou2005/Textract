@@ -109,7 +109,7 @@ Textract introduces a 4-pillar unified architecture:
 
 ## 📊 4. iQOO Hackathon 2026 Pitch Deck & Presentation
 
-This repository includes a standalone pitch deck generator (`scripts/generate_deck.py`) and a pre-compiled 16:9 widescreen presentation deck: [`Textract_iQOO_Hackathon_2026.pptx`](file:///Textract_iQOO_Hackathon_2026.pptx).
+This repository includes a standalone pitch deck generator (`scripts/generate_deck.py`) to generate the complete 16:9 widescreen presentation deck for evaluators and judges.
 
 ### 4.1 Slide-by-Slide Blueprint
 
@@ -529,6 +529,10 @@ Content-Type: multipart/form-data
 
 ```
 Textract/
+├── app/                           # Native Android application (Kotlin, Jetpack Compose, CameraX)
+│   ├── src/                       # Android app source code & activity layouts
+│   └── build.gradle.kts           # Android module build configuration
+│
 ├── backend/
 │   ├── app.py                     # FastAPI server, RapidOCR pipeline, typography heuristics & inpainting
 │   ├── requirements.txt           # Python backend dependencies (FastAPI, OpenCV, RapidOCR, NumPy, etc.)
@@ -538,25 +542,18 @@ Textract/
 │   ├── index.html                 # Main web UI, canvas workspace, floating toolbars & 8-way handles
 │   ├── app.js                     # Complete client controller, Canvas 2D engine & state management
 │   ├── style.css                  # Custom design system, typography popovers, split slider, resize handles
-│   └── sample_aws.png             # Official AWS Builder Center test benchmark flyer
+│   └── demo_flyer.jpg             # Global AI Conference test flyer (built-in local demo preset)
 │
 ├── scripts/
-│   ├── generate_deck.py           # Generates the 16:9 iQOO Hackathon pitch deck (python-pptx)
+│   ├── generate_deck.py           # Standalone 16:9 iQOO Hackathon pitch deck generator (python-pptx)
 │   └── export_and_quantize_paddleocr.py  # INT8 ONNX quantization script for NPU/mobile deployment
 │
-├── extracted_screenshots/         # Extracted visual slide previews and UI presentation assets
-│   ├── screenshot_1.jpeg          # Title slide preview
-│   ├── screenshot_2.jpeg          # Problem & stats preview
-│   ├── screenshot_3.jpeg          # Solution & workflow preview
-│   ├── screenshot_4.jpeg          # Architecture & dataflow preview
-│   ├── screenshot_5.jpeg          # Typography profiler & inpainting preview
-│   ├── screenshot_6.jpeg          # Competitive benchmarks preview
-│   └── screenshot_7.jpeg          # Enterprise use cases & roadmap preview
-│
-├── Textract_iQOO_Hackathon_2026.pptx # Pre-built 16:9 Widescreen Pitch Deck Presentation
+├── build.gradle.kts               # Root Gradle project build script
+├── settings.gradle.kts            # Gradle settings declaring project modules
+├── gradlew & gradlew.bat          # Official Gradle wrapper binaries & scripts
 ├── ARCHITECTURE.md                # Detailed system architecture, tensor pipeline & mobile engine spec
-├── SUBMISSION_PITCH.md            # Hackathon idea-screening submission & feature compliance matrix
-├── .gitignore                     # Git exclusion rules (caches, virtual environments, build files)
+├── .gitignore                     # Production Git exclusion rules (caches, binaries, sensitive files)
+├── .vercelignore & vercel.json    # Cloud deployment configuration
 └── README.md                      # Comprehensive documentation, technical guide & PPT blueprint
 ```
 
@@ -619,12 +616,14 @@ python -m http.server 3000
 
 ### Step 4: Open in Browser & Start Editing
 1. Open your browser to **`http://localhost:3000`**.
-2. The system automatically loads the **AWS Builder Center Flyer** (`sample_aws.png`), detects all text blocks, profiles typography, and highlights editable regions.
-3. **Click on any text block** to open the inline editor.
-4. **Drag any of the 8 dots** to resize the box, or grab the **top move handle** to reposition the text.
-5. Type replacement text and hit **Enter** or click outside to commit the change.
-6. Toggle **↔ Before / After Split** to compare original vs. edited pixels.
-7. Click **💾 Save / Export Image** to download your high-resolution edited document.
+2. **Upload any document or flyer**: Click **"Select Image from Device"**, drag and drop an image file, capture via camera, or choose a preset (such as **Demo Flyer**, **Battle Poster**, **Cafe Menu**, or **Certificate**).
+3. Textract instantly runs OCR detection, extracts typography profiles (font family, weight, slant, color, line spacing), and highlights all editable text blocks.
+4. **Click on any text block** to open the instant inline editor with full typography matching.
+5. **Drag any of the 8 dots** to resize the box, or grab the **move handle** to reposition the text.
+6. Type replacement text and hit **Enter** or click outside to commit the change.
+7. Toggle **↔ Before / After Split** to compare original vs. edited pixels in real-time.
+8. Click **💾 Save / Export Image** to download your high-resolution edited document.
+
 
 ---
 

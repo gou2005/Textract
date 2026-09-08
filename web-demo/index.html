@@ -126,6 +126,13 @@
       <section class="viewer-section">
         <div class="toolbar">
           <div class="toolbar-left">
+            <button id="btn-toolbar-upload" class="btn btn-icon btn-upload-highlight" title="Upload an image or document from your device">
+              <span>📁 Upload Image</span>
+            </button>
+            <button id="btn-close-doc" class="btn btn-icon hidden" title="Close current document and return to upload screen">
+              <span>✕ Close Image</span>
+            </button>
+            <span class="divider"></span>
             <button id="btn-undo" class="btn btn-icon" title="Undo Edit (Ctrl+Z)" disabled>
               <span>↩ Undo</span>
             </button>
@@ -133,22 +140,22 @@
               <span>↪ Redo</span>
             </button>
             <span class="divider"></span>
-            <button id="btn-draw-mode" class="btn btn-icon" title="Draw Box: Drag over any text to select & edit">
+            <button id="btn-draw-mode" class="btn btn-icon" title="Draw Box: Drag over any text to select & edit" disabled>
               <span id="draw-mode-text">✏️ Draw Box to Edit</span>
             </button>
-            <button id="btn-compare" class="btn btn-icon btn-toggle" title="Toggle Before/After Compare Split View">
+            <button id="btn-compare" class="btn btn-icon btn-toggle" title="Toggle Before/After Compare Split View" disabled>
               <span id="compare-text">↔ Before / After Split</span>
             </button>
             <span class="divider"></span>
-            <button id="btn-reset-original" class="btn btn-icon" title="Reset Image to Initial">
+            <button id="btn-reset-original" class="btn btn-icon" title="Reset Image to Initial" disabled>
               <span>🔄 Reset</span>
             </button>
           </div>
           <div class="toolbar-right">
             <div class="zoom-controls">
-              <button id="btn-zoom-out" class="btn-tool" title="Zoom Out">-</button>
+              <button id="btn-zoom-out" class="btn-tool" title="Zoom Out" disabled>-</button>
               <span id="zoom-level" class="zoom-text">100%</span>
-              <button id="btn-zoom-in" class="btn-tool" title="Zoom In">+</button>
+              <button id="btn-zoom-in" class="btn-tool" title="Zoom In" disabled>+</button>
             </div>
             <button id="btn-export" class="btn btn-icon" disabled>
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0;">
@@ -163,12 +170,72 @@
 
         <div class="helper-hint">
           <span class="hint-icon">⚡</span>
-          <span><strong>Click any text box</strong> on the flyer to open the instant inline editor! The exact font, color, weight, and size will automatically match.</span>
+          <span id="helper-hint-text"><strong>Import or drop an image</strong> below to automatically detect text, typography, and fonts!</span>
         </div>
 
         <!-- Canvas Container -->
         <div class="canvas-wrapper" id="canvas-wrapper">
-          <div id="canvas-container" class="canvas-container">
+          <!-- Upload Hero Drop Zone (Default Initial Screen) -->
+          <div id="upload-hero-zone" class="upload-hero-zone">
+            <div class="upload-card" id="upload-card">
+              <div class="upload-icon-wrapper">
+                <svg class="upload-svg" width="46" height="46" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                  <polyline points="17 8 12 3 7 8"></polyline>
+                  <line x1="12" y1="3" x2="12" y2="15"></line>
+                </svg>
+              </div>
+
+              <h2 class="upload-title">Upload Document or Flyer</h2>
+              <p class="upload-subtitle">Drag and drop your poster, flyer, receipt, or screenshot here, or browse a file from your device.</p>
+
+              <div class="upload-actions">
+                <button type="button" id="btn-hero-upload" class="btn btn-hero-primary">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" stroke="none">
+                    <path d="M10 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z"/>
+                  </svg>
+                  <span>SELECT IMAGE FROM DEVICE</span>
+                </button>
+                <button type="button" id="btn-hero-camera" class="btn btn-hero-secondary">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
+                    <circle cx="12" cy="13" r="4"></circle>
+                  </svg>
+                  <span>CAPTURE VIA CAMERA</span>
+                </button>
+              </div>
+
+              <div class="upload-divider-row">
+                <span>OR TEST WITH SAMPLE FLYER PRESETS</span>
+              </div>
+
+              <div class="upload-presets-grid">
+                <button type="button" class="preset-pill-btn" data-preset="demo_flyer">
+                  <span class="preset-icon">📄</span>
+                  <span class="preset-label">Demo Flyer</span>
+                </button>
+                <button type="button" class="preset-pill-btn" data-preset="poster">
+                  <span class="preset-icon">🎮</span>
+                  <span class="preset-label">Battle Poster</span>
+                </button>
+                <button type="button" class="preset-pill-btn" data-preset="menu">
+                  <span class="preset-icon">☕</span>
+                  <span class="preset-label">Cafe Menu</span>
+                </button>
+                <button type="button" class="preset-pill-btn" data-preset="certificate">
+                  <span class="preset-icon">🏆</span>
+                  <span class="preset-label">Certificate</span>
+                </button>
+              </div>
+
+              <div class="upload-footer-hints">
+                <span>💡 Tip: Paste any screenshot directly with <strong>Ctrl+V</strong></span>
+                <span class="format-badge">PNG · JPG · WEBP · BMP</span>
+              </div>
+            </div>
+          </div>
+
+          <div id="canvas-container" class="canvas-container hidden">
             <canvas id="doc-canvas"></canvas>
             <div id="box-overlays" class="box-overlays"></div>
             <div id="draw-selection-box" class="draw-selection-box hidden"></div>

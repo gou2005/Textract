@@ -29,7 +29,7 @@ secrets/
 # Sample Media, Test Flyers & Screenshots
 sample_aws.png
 web-demo/sample_aws.png
-demo_flyer.*
+demo_flyer_*
 extracted_screenshots/
 slide_previews/
 demo_assets/
