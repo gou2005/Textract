@@ -1,0 +1,31 @@
+# Virtual environments & Python cache
+backend/venv/
+backend/.venv/
+**/venv/
+**/.venv/
+**/__pycache__/
+*.pyc
+*.pyo
+
+# Android project files
+app/
+gradle/
+.gradle/
+gradlew
+gradlew.bat
+build/
+*.apk
+*.aab
+.idea/
+
+# Large assets and presentation decks
+*.pptx
+Textract_iQOO_Hackathon_2026.pptx
+extracted_screenshots/
+scripts/
+
+# Documentation & Git
+.git/
+.gitignore
+ARCHITECTURE.md
+SUBMISSION_PITCH.md
