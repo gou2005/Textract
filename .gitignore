@@ -29,10 +29,14 @@ secrets/
 # Sample Media, Test Flyers & Screenshots
 sample_aws.png
 web-demo/sample_aws.png
+demo_flyer.*
+web-demo/demo_flyer.*
+*demo_flyer*
 demo_flyer_*
 extracted_screenshots/
 slide_previews/
 demo_assets/
+test_images/
 
 # Presentations, PDFs & Office Temporary Lock Files
 *.pptx

@@ -9,8 +9,10 @@ class TextractSimulator {
     this.regionsList = document.getElementById('regions-list');
     this.regionCountBadge = document.getElementById('region-count-badge');
     this.canvasContainer = document.getElementById('canvas-container');
+    this.canvasWrapper = document.getElementById('canvas-wrapper');
+    this.uploadHeroZone = document.getElementById('upload-hero-zone');
     this.drawSelectionBox = document.getElementById('draw-selection-box');
-
+    
     // Inline Editor & Floating Formatting Toolbar
     this.inlineEditor = document.getElementById('inline-text-editor');
     this.inlineInput = document.getElementById('inline-text-input');
@@ -48,7 +50,8 @@ class TextractSimulator {
     this.zoomLevel = 1.0;
     this.cameraStream = null;
 
-    this.currentTemplate = 'aws_sample';
+    this.hasDocument = false;
+    this.currentTemplate = null;
     this.ocrGranularity = 'all';
     this.rawOcrData = null;
 
@@ -58,6 +61,7 @@ class TextractSimulator {
   }
 
   initEventListeners() {
+    // Template dropdown (if present)
     const templateSelect = document.getElementById('template-select');
     if (templateSelect) {
       templateSelect.addEventListener('change', (e) => {
@@ -66,22 +70,94 @@ class TextractSimulator {
       });
     }
 
+    // Granularity / Sensitivity selector
     document.getElementById('ocr-granularity-select').addEventListener('change', (e) => {
       this.ocrGranularity = e.target.value;
-      this.runRealOcrDetection();
+      if (this.hasDocument) {
+        this.runRealOcrDetection();
+      }
     });
 
+    // File input & Camera
     document.getElementById('file-input').addEventListener('change', (e) => this.handleImageUpload(e));
     document.getElementById('btn-camera-capture').addEventListener('click', () => this.openCameraModal());
     document.getElementById('btn-camera-close').addEventListener('click', () => this.closeCameraModal());
     document.getElementById('btn-camera-cancel').addEventListener('click', () => this.closeCameraModal());
     document.getElementById('btn-camera-snap').addEventListener('click', () => this.snapCameraPhoto());
 
+    // Upload hero buttons & triggers
+    const triggerUpload = () => document.getElementById('file-input').click();
+    const btnHeroUpload = document.getElementById('btn-hero-upload');
+    if (btnHeroUpload) btnHeroUpload.addEventListener('click', triggerUpload);
+    const btnToolbarUpload = document.getElementById('btn-toolbar-upload');
+    if (btnToolbarUpload) btnToolbarUpload.addEventListener('click', triggerUpload);
+
+    const btnHeroCamera = document.getElementById('btn-hero-camera');
+    if (btnHeroCamera) btnHeroCamera.addEventListener('click', () => this.openCameraModal());
+
+    const btnCloseDoc = document.getElementById('btn-close-doc');
+    if (btnCloseDoc) btnCloseDoc.addEventListener('click', () => this.showUploadZone());
+
+    // Preset Pill Buttons
+    document.querySelectorAll('.preset-pill-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const preset = btn.getAttribute('data-preset');
+        if (preset) this.loadTemplate(preset);
+      });
+    });
+
+    // Drag-and-Drop on Canvas Area
+    if (this.canvasWrapper) {
+      ['dragenter', 'dragover'].forEach(eventName => {
+        this.canvasWrapper.addEventListener(eventName, (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          this.canvasWrapper.classList.add('drag-active');
+        });
+      });
+
+      ['dragleave', 'drop'].forEach(eventName => {
+        this.canvasWrapper.addEventListener(eventName, (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          this.canvasWrapper.classList.remove('drag-active');
+        });
+      });
+
+      this.canvasWrapper.addEventListener('drop', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        this.canvasWrapper.classList.remove('drag-active');
+        if (e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0]) {
+          this.loadImageFromFile(e.dataTransfer.files[0]);
+        }
+      });
+    }
+
+    // Direct Image Paste from Clipboard (Ctrl+V)
+    window.addEventListener('paste', (e) => {
+      if (this.selectedRegion) return;
+      const items = (e.clipboardData || e.originalEvent?.clipboardData)?.items;
+      if (!items) return;
+      for (let i = 0; i < items.length; i++) {
+        if (items[i].type && items[i].type.startsWith('image/')) {
+          const file = items[i].getAsFile();
+          if (file) {
+            e.preventDefault();
+            this.loadImageFromFile(file);
+            break;
+          }
+        }
+      }
+    });
+
+    // Batch modal
     document.getElementById('btn-open-batch').addEventListener('click', () => this.openBatchModal());
     document.getElementById('btn-batch-close').addEventListener('click', () => this.closeBatchModal());
     document.getElementById('btn-cancel-batch').addEventListener('click', () => this.closeBatchModal());
     document.getElementById('btn-execute-batch').addEventListener('click', () => this.executeBatchMode());
 
+    // Toolbar actions
     document.getElementById('btn-undo').addEventListener('click', () => this.undo());
     document.getElementById('btn-redo').addEventListener('click', () => this.redo());
     document.getElementById('btn-draw-mode').addEventListener('click', () => this.toggleDrawMode());
@@ -89,9 +165,11 @@ class TextractSimulator {
     document.getElementById('btn-reset-original').addEventListener('click', () => this.resetToOriginal());
     document.getElementById('btn-export').addEventListener('click', () => this.exportImage());
 
+    // Zoom
     document.getElementById('btn-zoom-in').addEventListener('click', () => this.setZoom(this.zoomLevel + 0.15));
     document.getElementById('btn-zoom-out').addEventListener('click', () => this.setZoom(this.zoomLevel - 0.15));
 
+    // Direct Inline Keyboard Editing (Enter = Apply, Esc = Cancel)
     this.inlineInput.addEventListener('keydown', (e) => {
       if (e.key === 'Enter') {
         e.preventDefault();
@@ -102,6 +180,7 @@ class TextractSimulator {
       }
     });
 
+    // Commit when clicking away outside the active inline editor
     window.addEventListener('mousedown', (e) => {
       if (!this.selectedRegion) return;
       if (e.target.closest('#inline-text-editor') || e.target.classList.contains('overlay-box') || e.target.closest('#engine-modal')) {
@@ -110,11 +189,15 @@ class TextractSimulator {
       this.commitInlineEdit();
     });
 
+    // Interactive Drag-to-Draw Custom Text Box
     this.initDrawingListeners();
+
+    // Split slider drag handling
     this.initSplitSliderListeners();
 
+    // Keyboard shortcuts
     window.addEventListener('keydown', (e) => {
-      if (this.selectedRegion) return;
+      if (this.selectedRegion) return; // Allow normal typing in input
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z') {
         e.preventDefault();
         if (e.shiftKey) this.redo();
@@ -127,6 +210,7 @@ class TextractSimulator {
   }
 
   initFormattingToolbar() {
+    // Font Family Selector
     this.fontSelector.addEventListener('change', (e) => {
       if (!this.selectedRegion) return;
       this.selectedRegion.fontFamily = e.target.value;
@@ -134,6 +218,7 @@ class TextractSimulator {
       this.inlineInput.style.fontFamily = `"${e.target.value}", sans-serif`;
     });
 
+    // Font Size Adjusters
     this.btnFontDec.addEventListener('click', (e) => {
       e.stopPropagation();
       if (!this.selectedRegion) return;
@@ -150,6 +235,7 @@ class TextractSimulator {
       this.inlineInput.style.fontSize = `${this.getVisualFontSize(this.selectedRegion)}px`;
     });
 
+    // Font Weight Buttons (Reg, Bold, Black)
     this.weightButtons.forEach(btn => {
       btn.addEventListener('click', (e) => {
         e.stopPropagation();
@@ -162,6 +248,7 @@ class TextractSimulator {
       });
     });
 
+    // Custom Color Picker
     this.colorPicker.addEventListener('input', (e) => {
       if (!this.selectedRegion) return;
       const color = e.target.value;
@@ -170,6 +257,7 @@ class TextractSimulator {
       this.inlineInput.style.color = color;
     });
 
+    // Quick Swatch Palette Dots
     this.swatchButtons.forEach(swatch => {
       swatch.addEventListener('click', (e) => {
         e.stopPropagation();
@@ -182,6 +270,7 @@ class TextractSimulator {
       });
     });
 
+    // Text Alignment Buttons
     this.alignButtons.forEach(btn => {
       btn.addEventListener('click', (e) => {
         e.stopPropagation();
@@ -194,6 +283,7 @@ class TextractSimulator {
       });
     });
 
+    // Italic Slant Toggle
     if (this.btnToggleItalic) {
       this.btnToggleItalic.addEventListener('click', (e) => {
         e.stopPropagation();
@@ -204,6 +294,7 @@ class TextractSimulator {
       });
     }
 
+    // Case Transform Toggle (UPPERCASE)
     this.btnToggleCase.addEventListener('click', (e) => {
       e.stopPropagation();
       if (!this.selectedRegion) return;
@@ -212,6 +303,7 @@ class TextractSimulator {
       this.inlineInput.style.textTransform = this.selectedRegion.isUppercase ? 'uppercase' : 'none';
     });
 
+    // Apply & Cancel buttons
     this.btnInlineApply.addEventListener('click', (e) => {
       e.stopPropagation();
       this.commitInlineEdit();
@@ -222,9 +314,10 @@ class TextractSimulator {
       this.closeInlineEditing();
     });
 
+    // Manual Bounding Box Resizer and Mover
     this.inlineEditor.addEventListener('mousedown', (e) => {
       if (!this.selectedRegion) return;
-
+      
       const target = e.target.closest('.resize-handle, .move-handle');
       if (!target) return;
 
@@ -233,24 +326,27 @@ class TextractSimulator {
 
       const isMove = target.classList.contains('move-handle');
       const dir = target.getAttribute('data-dir');
-
+      
       const startX = e.clientX;
       const startY = e.clientY;
-
+      
       const rect = this.inlineEditor.getBoundingClientRect();
+      const startW = rect.width;
+      const startH = rect.height;
+      
+      const canvasRect = this.canvas.getBoundingClientRect();
+      const scaleX = this.canvas.width / canvasRect.width;
+      const scaleY = this.canvas.height / canvasRect.height;
+      
       const startBoxX = this.selectedRegion.box.x;
       const startBoxY = this.selectedRegion.box.y;
       const startBoxW = this.selectedRegion.box.w;
       const startBoxH = this.selectedRegion.box.h;
 
-      const canvasRect = this.canvas.getBoundingClientRect();
-      const scaleX = this.canvas.width / canvasRect.width;
-      const scaleY = this.canvas.height / canvasRect.height;
-
       const onMouseMove = (moveEvent) => {
         const dx = moveEvent.clientX - startX;
         const dy = moveEvent.clientY - startY;
-
+        
         let newBoxX = startBoxX;
         let newBoxY = startBoxY;
         let newBoxW = startBoxW;
@@ -262,23 +358,25 @@ class TextractSimulator {
         } else {
           const scaledDx = dx * scaleX;
           const scaledDy = dy * scaleY;
-
+          
           if (dir.includes('l')) { newBoxX = startBoxX + scaledDx; newBoxW = startBoxW - scaledDx; }
           if (dir.includes('r')) { newBoxW = startBoxW + scaledDx; }
           if (dir.includes('t')) { newBoxY = startBoxY + scaledDy; newBoxH = startBoxH - scaledDy; }
           if (dir.includes('b')) { newBoxH = startBoxH + scaledDy; }
         }
 
+        // Constraints
         newBoxW = Math.max(10, newBoxW);
         newBoxH = Math.max(10, newBoxH);
 
         this.selectedRegion.box = { x: newBoxX, y: newBoxY, w: newBoxW, h: newBoxH };
 
+        // Update DOM inlineEditor immediately
         this.inlineEditor.style.left = `${(newBoxX / this.canvas.width) * 100}%`;
         this.inlineEditor.style.top = `${(newBoxY / this.canvas.height) * 100}%`;
         this.inlineEditor.style.width = `${(newBoxW / this.canvas.width) * 100}%`;
         this.inlineEditor.style.height = `${(newBoxH / this.canvas.height) * 100}%`;
-
+        
         if (!isMove) {
           const isVert = this.selectedRegion.isVertical;
           const newFontSize = Math.max(12, Math.round((isVert ? newBoxW : newBoxH) * 1.15));
@@ -321,6 +419,7 @@ class TextractSimulator {
     btnClose.addEventListener('click', closeModal);
     btnCancel.addEventListener('click', closeModal);
 
+    // Toggle radio cards
     const radioCards = document.querySelectorAll('.engine-radio-card');
     radioCards.forEach(card => {
       card.addEventListener('click', () => {
@@ -434,6 +533,24 @@ class TextractSimulator {
         const colors = this.sampleBoxColors(box, this.canvas.width, this.canvas.height, imgData.data);
 
         let extractedText = "Text";
+        if (typeof Tesseract !== 'undefined') {
+          try {
+            const cropCanvas = document.createElement('canvas');
+            cropCanvas.width = canvasWidth;
+            cropCanvas.height = canvasHeight;
+            const cropCtx = cropCanvas.getContext('2d');
+            cropCtx.drawImage(this.canvas, canvasLeft, canvasTop, canvasWidth, canvasHeight, 0, 0, canvasWidth, canvasHeight);
+            
+            const worker = await Tesseract.createWorker('eng');
+            const ret = await worker.recognize(cropCanvas);
+            await worker.terminate();
+            if (ret && ret.data && ret.data.text && ret.data.text.trim().length > 0) {
+              extractedText = ret.data.text.trim();
+            }
+          } catch (err) {
+            console.warn('Crop OCR fallback:', err);
+          }
+        }
 
         const newRegion = {
           id: `custom_${Date.now().toString().slice(-4)}`,
@@ -446,7 +563,7 @@ class TextractSimulator {
           fontWeight: '700',
           fontFamily: 'Montserrat',
           alignment: 'center',
-          isUppercase: false,
+          isUppercase: extractedText.isupper(),
           isEdited: false
         };
 
@@ -525,13 +642,34 @@ class TextractSimulator {
     this.currentTemplate = templateType;
     this.closeInlineEditing();
 
-    if (templateType === 'aws_sample') {
-      this.renderAwsSampleTemplate();
+    if (templateType === 'demo_flyer') {
+      this.renderDemoFlyerTemplate();
       return;
     }
+
+    this.showCanvasWorkspace();
+
+    const width = 800;
+    const height = 1000;
+    this.canvas.width = width;
+    this.canvas.height = height;
+    this.rawOcrData = null;
+
+    if (templateType === 'poster') {
+      this.renderPosterTemplate(width, height);
+    } else if (templateType === 'menu') {
+      this.renderMenuTemplate(width, height);
+    } else if (templateType === 'infographic') {
+      this.renderInfographicTemplate(width, height);
+    } else if (templateType === 'certificate') {
+      this.renderCertificateTemplate(width, height);
+    }
+
+    this.saveInitialState();
   }
 
-  renderAwsSampleTemplate() {
+  renderDemoFlyerTemplate() {
+    this.showCanvasWorkspace();
     const img = new Image();
     img.onload = async () => {
       this.canvas.width = img.width;
@@ -541,11 +679,333 @@ class TextractSimulator {
       await this.runRealOcrDetection();
       this.saveInitialState();
     };
-    img.src = 'sample_aws.png';
+    img.onerror = () => {
+      this.loadTemplate('poster');
+    };
+    img.src = 'demo_flyer.jpg';
   }
 
   saveCleanBackground() {
     this.cleanBackgroundData = this.ctx.getImageData(0, 0, this.canvas.width, this.canvas.height);
+  }
+
+  renderPosterTemplate(width, height) {
+    this.ctx.fillStyle = '#0B0B0E';
+    this.ctx.fillRect(0, 0, width, height);
+
+    const grad = this.ctx.createLinearGradient(0, 0, width, height);
+    grad.addColorStop(0, '#1E1E26');
+    grad.addColorStop(1, '#111116');
+    this.ctx.fillStyle = grad;
+    this.ctx.roundRect(40, 40, width - 80, height - 80, 20);
+    this.ctx.fill();
+
+    this.saveCleanBackground();
+
+    this.textRegions = [
+      {
+        id: 'r1',
+        box: { x: 80, y: 110, w: 640, h: 80 },
+        text: 'CHENNAI CITY BATTLE 2026',
+        textColor: '#121212',
+        bgColor: '#F8E71C',
+        fontSize: 42,
+        fontWeight: '900',
+        fontFamily: 'Anton',
+        alignment: 'center',
+        isUppercase: true,
+        letterSpacing: 1.0,
+        isEdited: false
+      },
+      {
+        id: 'r2',
+        box: { x: 120, y: 250, w: 560, h: 60 },
+        text: 'iQOO HACKATHON FINALS',
+        textColor: '#F8E71C',
+        bgColor: '#1E1E26',
+        fontSize: 32,
+        fontWeight: '800',
+        fontFamily: 'Oswald',
+        alignment: 'center',
+        isUppercase: true,
+        letterSpacing: 0.5,
+        isEdited: false
+      },
+      {
+        id: 'r3',
+        box: { x: 100, y: 400, w: 600, h: 65 },
+        text: 'Snapdragon NPU Acceleration',
+        textColor: '#FFFFFF',
+        bgColor: '#15151A',
+        fontSize: 30,
+        fontWeight: '700',
+        fontFamily: 'Outfit',
+        alignment: 'center',
+        isUppercase: false,
+        letterSpacing: 0.0,
+        isEdited: false
+      },
+      {
+        id: 'r4',
+        box: { x: 140, y: 550, w: 520, h: 60 },
+        text: 'AI Vision · Cloud & Vision API',
+        textColor: '#00E676',
+        bgColor: '#121216',
+        fontSize: 26,
+        fontWeight: '700',
+        fontFamily: 'Inter',
+        alignment: 'center',
+        isUppercase: false,
+        letterSpacing: 0.0,
+        isEdited: false
+      },
+      {
+        id: 'r5',
+        box: { x: 180, y: 710, w: 440, h: 50 },
+        text: 'Scan · Edit · Save',
+        textColor: '#29B6F6',
+        bgColor: '#1E1E26',
+        fontSize: 24,
+        fontWeight: '600',
+        fontFamily: 'Poppins',
+        alignment: 'center',
+        isUppercase: false,
+        letterSpacing: 0.0,
+        isEdited: false
+      }
+    ];
+
+    this.renderRegionsToCanvas();
+  }
+
+  renderMenuTemplate(width, height) {
+    this.ctx.fillStyle = '#1A1815';
+    this.ctx.fillRect(0, 0, width, height);
+
+    this.ctx.fillStyle = '#26221D';
+    this.ctx.roundRect(40, 40, width - 80, height - 80, 16);
+    this.ctx.fill();
+
+    this.saveCleanBackground();
+
+    this.textRegions = [
+      {
+        id: 'm1',
+        box: { x: 100, y: 100, w: 600, h: 70 },
+        text: 'GOURMET BISTRO MENU',
+        textColor: '#F8E71C',
+        bgColor: '#26221D',
+        fontSize: 38,
+        fontWeight: '900',
+        fontFamily: 'Playfair Display',
+        alignment: 'center',
+        isUppercase: true,
+        letterSpacing: 1.5,
+        isEdited: false
+      },
+      {
+        id: 'm2',
+        box: { x: 100, y: 240, w: 600, h: 50 },
+        text: 'Smoked Truffle Burger - $14.99',
+        textColor: '#FFFFFF',
+        bgColor: '#2A2520',
+        fontSize: 22,
+        fontWeight: '600',
+        fontFamily: 'Montserrat',
+        alignment: 'left',
+        isUppercase: false,
+        letterSpacing: 0.0,
+        isEdited: false
+      },
+      {
+        id: 'm3',
+        box: { x: 100, y: 360, w: 600, h: 50 },
+        text: 'Wild Mushroom Risotto - $18.50',
+        textColor: '#FFFFFF',
+        bgColor: '#2A2520',
+        fontSize: 22,
+        fontWeight: '600',
+        fontFamily: 'Montserrat',
+        alignment: 'left',
+        isUppercase: false,
+        letterSpacing: 0.0,
+        isEdited: false
+      },
+      {
+        id: 'm4',
+        box: { x: 100, y: 480, w: 600, h: 50 },
+        text: 'Artisan Espresso Blend - $4.50',
+        textColor: '#00E676',
+        bgColor: '#26221D',
+        fontSize: 22,
+        fontWeight: '600',
+        fontFamily: 'Montserrat',
+        alignment: 'left',
+        isUppercase: false,
+        letterSpacing: 0.0,
+        isEdited: false
+      },
+      {
+        id: 'm5',
+        box: { x: 140, y: 680, w: 520, h: 55 },
+        text: 'Weekend Special: 20% OFF',
+        textColor: '#FF5252',
+        bgColor: '#1A1815',
+        fontSize: 26,
+        fontWeight: '800',
+        fontFamily: 'Oswald',
+        alignment: 'center',
+        isUppercase: true,
+        letterSpacing: 0.5,
+        isEdited: false
+      }
+    ];
+
+    this.renderRegionsToCanvas();
+  }
+
+  renderInfographicTemplate(width, height) {
+    this.ctx.fillStyle = '#080D1A';
+    this.ctx.fillRect(0, 0, width, height);
+
+    this.ctx.fillStyle = '#0F1A30';
+    this.ctx.roundRect(40, 40, width - 80, height - 80, 16);
+    this.ctx.fill();
+
+    this.saveCleanBackground();
+
+    this.textRegions = [
+      {
+        id: 'i1',
+        box: { x: 80, y: 110, w: 640, h: 75 },
+        text: 'EDGE NPU PERFORMANCE 2026',
+        textColor: '#29B6F6',
+        bgColor: '#0F1A30',
+        fontSize: 36,
+        fontWeight: '900',
+        fontFamily: 'Outfit',
+        alignment: 'center',
+        isUppercase: true,
+        letterSpacing: 1.0,
+        isEdited: false
+      },
+      {
+        id: 'i2',
+        box: { x: 100, y: 270, w: 600, h: 55 },
+        text: '8.4 TOPS Qualcomm Hexagon Engine',
+        textColor: '#FFFFFF',
+        bgColor: '#142342',
+        fontSize: 25,
+        fontWeight: '700',
+        fontFamily: 'Inter',
+        alignment: 'center',
+        isUppercase: false,
+        letterSpacing: 0.0,
+        isEdited: false
+      },
+      {
+        id: 'i3',
+        box: { x: 120, y: 420, w: 560, h: 55 },
+        text: 'Sub-30ms Detection Latency',
+        textColor: '#F8E71C',
+        bgColor: '#0F1A30',
+        fontSize: 24,
+        fontWeight: '700',
+        fontFamily: 'JetBrains Mono',
+        alignment: 'center',
+        isUppercase: false,
+        letterSpacing: 0.0,
+        isEdited: false
+      },
+      {
+        id: 'i4',
+        box: { x: 140, y: 580, w: 520, h: 55 },
+        text: 'Zero Cloud Data Transferred',
+        textColor: '#00E676',
+        bgColor: '#142342',
+        fontSize: 24,
+        fontWeight: '700',
+        fontFamily: 'Inter',
+        alignment: 'center',
+        isUppercase: false,
+        letterSpacing: 0.0,
+        isEdited: false
+      }
+    ];
+
+    this.renderRegionsToCanvas();
+  }
+
+  renderCertificateTemplate(width, height) {
+    this.ctx.fillStyle = '#141416';
+    this.ctx.fillRect(0, 0, width, height);
+
+    this.ctx.strokeStyle = '#F8E71C';
+    this.ctx.lineWidth = 4;
+    this.ctx.strokeRect(50, 50, width - 100, height - 100);
+
+    this.saveCleanBackground();
+
+    this.textRegions = [
+      {
+        id: 'c1',
+        box: { x: 100, y: 130, w: 600, h: 70 },
+        text: 'CERTIFICATE OF EXCELLENCE',
+        textColor: '#F8E71C',
+        bgColor: '#141416',
+        fontSize: 34,
+        fontWeight: '900',
+        fontFamily: 'Playfair Display',
+        alignment: 'center',
+        isUppercase: true,
+        letterSpacing: 1.5,
+        isEdited: false
+      },
+      {
+        id: 'c2',
+        box: { x: 140, y: 280, w: 520, h: 50 },
+        text: 'Awarded to: Sarah Jenkins',
+        textColor: '#FFFFFF',
+        bgColor: '#1E1E22',
+        fontSize: 26,
+        fontWeight: '700',
+        fontFamily: 'Pacifico',
+        alignment: 'center',
+        isUppercase: false,
+        letterSpacing: 0.0,
+        isEdited: false
+      },
+      {
+        id: 'c3',
+        box: { x: 120, y: 420, w: 560, h: 55 },
+        text: 'iQOO AI Innovation Battle 2026',
+        textColor: '#29B6F6',
+        bgColor: '#141416',
+        fontSize: 25,
+        fontWeight: '700',
+        fontFamily: 'Outfit',
+        alignment: 'center',
+        isUppercase: false,
+        letterSpacing: 0.0,
+        isEdited: false
+      },
+      {
+        id: 'c4',
+        box: { x: 160, y: 620, w: 480, h: 50 },
+        text: 'Issued on: September 2026',
+        textColor: '#A0A0B0',
+        bgColor: '#1E1E22',
+        fontSize: 20,
+        fontWeight: '500',
+        fontFamily: 'Inter',
+        alignment: 'center',
+        isUppercase: false,
+        letterSpacing: 0.0,
+        isEdited: false
+      }
+    ];
+
+    this.renderRegionsToCanvas();
   }
 
   renderRegionsToCanvas() {
@@ -588,9 +1048,11 @@ class TextractSimulator {
     document.head.appendChild(link);
   }
 
-  async handleImageUpload(e) {
-    const file = e.target.files[0];
-    if (!file) return;
+  async loadImageFromFile(file) {
+    if (!file || !(file.type && file.type.startsWith('image/'))) {
+      alert('Please select a valid image file (PNG, JPG, WEBP).');
+      return;
+    }
 
     this.closeInlineEditing();
     const img = new Image();
@@ -600,10 +1062,66 @@ class TextractSimulator {
       this.ctx.drawImage(img, 0, 0);
 
       this.cleanBackgroundData = this.ctx.getImageData(0, 0, this.canvas.width, this.canvas.height);
+      this.showCanvasWorkspace();
       await this.runRealOcrDetection();
       this.saveInitialState();
     };
+    img.onerror = () => {
+      alert('Failed to load this image file. Please try another image.');
+    };
     img.src = URL.createObjectURL(file);
+  }
+
+  async handleImageUpload(e) {
+    const file = e.target.files && e.target.files[0];
+    if (!file) return;
+    await this.loadImageFromFile(file);
+    e.target.value = '';
+  }
+
+  showCanvasWorkspace() {
+    this.hasDocument = true;
+    const heroZone = document.getElementById('upload-hero-zone');
+    if (heroZone) heroZone.classList.add('hidden');
+    if (this.canvasContainer) this.canvasContainer.classList.remove('hidden');
+    const closeBtn = document.getElementById('btn-close-doc');
+    if (closeBtn) closeBtn.classList.remove('hidden');
+
+    const helperText = document.getElementById('helper-hint-text');
+    if (helperText) {
+      helperText.innerHTML = '<strong>Click any text box</strong> on the flyer to open the instant inline editor! The exact font, color, weight, and size will automatically match.';
+    }
+
+    this.updateControlsState();
+  }
+
+  showUploadZone() {
+    this.hasDocument = false;
+    this.currentTemplate = null;
+    this.closeInlineEditing();
+
+    const heroZone = document.getElementById('upload-hero-zone');
+    if (heroZone) heroZone.classList.remove('hidden');
+    if (this.canvasContainer) this.canvasContainer.classList.add('hidden');
+    const closeBtn = document.getElementById('btn-close-doc');
+    if (closeBtn) closeBtn.classList.add('hidden');
+
+    const helperText = document.getElementById('helper-hint-text');
+    if (helperText) {
+      helperText.innerHTML = '<strong>Import or drop an image</strong> below to automatically detect text, typography, and fonts!';
+    }
+
+    this.textRegions = [];
+    this.undoStack = [];
+    this.redoStack = [];
+    this.selectedRegion = null;
+    this.originalBitmapData = null;
+    this.cleanBackgroundData = null;
+    this.rawOcrData = null;
+
+    this.renderOverlays();
+    this.renderRegionsList();
+    this.updateControlsState();
   }
 
   async runRealOcrDetection() {
@@ -621,9 +1139,9 @@ class TextractSimulator {
       const formData = new FormData();
       formData.append('file', blob, 'image.png');
 
-      let endpoint = 'http://127.0.0.1:8000/api/detect';
+      let endpoint = 'http://localhost:8000/api/detect';
       if (this.selectedEngine === 'gemini' && this.geminiApiKey) {
-        endpoint = 'http://127.0.0.1:8000/api/gemini-detect';
+        endpoint = 'http://localhost:8000/api/gemini-detect';
         formData.append('api_key', this.geminiApiKey);
       }
 
@@ -633,30 +1151,96 @@ class TextractSimulator {
       });
 
       if (!response.ok) throw new Error(`Backend response status: ${response.status}`);
-
+      
       const data = await response.json();
-
+      
       this.textRegions = data.regions.map(r => ({
         ...r,
         originalBox: { ...r.box },
         isEdited: false
       }));
 
+      // Dynamically load all discovered fonts
       this.textRegions.forEach(r => {
         if (r.fontFamily) this.loadGoogleFont(r.fontFamily, r.fontWeight);
       });
 
     } catch (err) {
-      console.warn('Backend OCR error:', err);
+      console.warn('Backend OCR unreachable or failed, running client-side Tesseract.js fallback:', err);
+      scanningStatusText.textContent = '⚡ Running Client-Side High-Precision OCR...';
+      await this.runTesseractClientFallback();
     }
 
     const t1 = performance.now();
     document.getElementById('latency-val').textContent = `~${Math.round(t1 - t0)} ms`;
     scanningOverlay.classList.add('hidden');
-
+    
     this.renderOverlays();
     this.renderRegionsList();
     this.updateControlsState();
+  }
+
+  async runTesseractClientFallback() {
+    if (typeof Tesseract === 'undefined') {
+      console.error('Tesseract.js not loaded.');
+      return;
+    }
+
+    try {
+      const worker = await Tesseract.createWorker('eng');
+      const ret = await worker.recognize(this.canvas);
+      await worker.terminate();
+
+      if (ret && ret.data && ret.data.lines && ret.data.lines.length > 0) {
+        const imgData = this.ctx.getImageData(0, 0, this.canvas.width, this.canvas.height);
+        const w = this.canvas.width;
+        const h = this.canvas.height;
+        const fallbackRegions = [];
+
+        ret.data.lines.forEach((line, idx) => {
+          const text = line.text ? line.text.trim() : '';
+          if (text.length >= 1) {
+            const bbox = line.bbox;
+            const boxW = bbox.x1 - bbox.x0;
+            const boxH = bbox.y1 - bbox.y0;
+
+            if (boxW >= 12 && boxH >= 8) {
+              const box = {
+                x: Math.max(0, bbox.x0 - 2),
+                y: Math.max(0, bbox.y0 - 2),
+                w: Math.min(w - bbox.x0, boxW + 4),
+                h: Math.min(h - bbox.y0, boxH + 4)
+              };
+
+              const colors = this.sampleBoxColors(box, w, h, imgData.data);
+              const region = {
+                id: `ocr_${idx + 1}`,
+                box: box,
+                originalBox: { ...box },
+                text: text,
+                textColor: colors.fg,
+                bgColor: colors.bg,
+                fontSize: Math.max(12, Math.round(box.h * 1.15)),
+                fontWeight: '700',
+                fontFamily: 'Montserrat',
+                alignment: 'center',
+                isUppercase: text.isupper(),
+                isEdited: false
+              };
+
+              this.profileRegionFont(region);
+              fallbackRegions.push(region);
+            }
+          }
+        });
+
+        if (fallbackRegions.length > 0) {
+          this.textRegions = fallbackRegions;
+        }
+      }
+    } catch (e) {
+      console.error('Client Tesseract fallback error:', e);
+    }
   }
 
   sampleBoxColors(box, width, height, data) {
@@ -666,6 +1250,7 @@ class TextractSimulator {
     const x2 = Math.floor(Math.min(width - 1, box.x + box.w));
     const y2 = Math.floor(Math.min(height - 1, box.y + box.h));
 
+    // Sample perimeter for background reference
     for (let x = x1; x <= x2; x += 2) {
       for (const py of [y1, y2]) {
         const idx = (py * width + x) * 4;
@@ -682,12 +1267,39 @@ class TextractSimulator {
     const bgR = bgCount > 0 ? Math.round(rSum / bgCount) : 20;
     const bgG = bgCount > 0 ? Math.round(gSum / bgCount) : 20;
     const bgB = bgCount > 0 ? Math.round(bSum / bgCount) : 26;
+    const bgLum = (0.299 * bgR + 0.587 * bgG + 0.114 * bgB) / 255.0;
+
+    // Isolate contrasting ink pixels
+    let fgR = 255, fgG = 255, fgB = 255;
+    let maxContrast = 0;
+
+    for (let y = y1 + 3; y < y2 - 3; y += 3) {
+      for (let x = x1 + 3; x < x2 - 3; x += 3) {
+        const idx = (y * width + x) * 4;
+        const pR = data[idx];
+        const pG = data[idx + 1];
+        const pB = data[idx + 2];
+        const pLum = (0.299 * pR + 0.587 * pG + 0.114 * pB) / 255.0;
+        const contrast = Math.abs(pLum - bgLum);
+
+        if (contrast > maxContrast && contrast > 0.22) {
+          maxContrast = contrast;
+          fgR = pR; fgG = pG; fgB = pB;
+        }
+      }
+    }
+
+    if (maxContrast === 0) {
+      fgR = bgLum > 0.5 ? 20 : 255;
+      fgG = bgLum > 0.5 ? 20 : 255;
+      fgB = bgLum > 0.5 ? 20 : 255;
+    }
 
     const toHex = (r, g, b) => `#${((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1)}`;
 
     return {
       bg: toHex(bgR, bgG, bgB),
-      fg: '#FFFFFF'
+      fg: toHex(fgR, fgG, fgB)
     };
   }
 
@@ -696,8 +1308,46 @@ class TextractSimulator {
       this.loadGoogleFont(region.fontFamily, region.fontWeight);
       return;
     }
-    region.fontWeight = '700';
-    region.fontFamily = 'Montserrat';
+
+    const box = region.box;
+    const cw = this.canvas.width;
+    const ch = this.canvas.height;
+    const data = (this.originalBitmapData || this.ctx.getImageData(0, 0, cw, ch)).data;
+
+    const x1 = Math.floor(Math.max(0, box.x));
+    const y1 = Math.floor(Math.max(0, box.y));
+    const x2 = Math.floor(Math.min(cw - 1, box.x + box.w));
+    const y2 = Math.floor(Math.min(ch - 1, box.y + box.h));
+
+    let ink = 0, total = 0;
+    for (let y = y1 + 2; y < y2 - 2; y += 2) {
+      for (let x = x1 + 2; x < x2 - 2; x += 2) {
+        const idx = (y * cw + x) * 4;
+        const lum = (0.299 * data[idx] + 0.587 * data[idx+1] + 0.114 * data[idx+2]) / 255;
+        if (Math.abs(lum - 0.5) > 0.18) ink++;
+        total++;
+      }
+    }
+
+    const inkRatio = total > 0 ? ink / total : 0.25;
+
+    if (inkRatio > 0.45) {
+      region.fontWeight = '900';
+      region.fontFamily = 'Montserrat';
+    } else if (inkRatio > 0.35) {
+      region.fontWeight = '700';
+      region.fontFamily = 'Montserrat';
+    } else if (inkRatio > 0.25) {
+      region.fontWeight = '500';
+      region.fontFamily = 'Inter';
+    } else if (inkRatio > 0.15) {
+      region.fontWeight = '400';
+      region.fontFamily = 'Inter';
+    } else {
+      region.fontWeight = '300';
+      region.fontFamily = 'Inter';
+    }
+
     this.loadGoogleFont(region.fontFamily, region.fontWeight);
   }
 
@@ -750,6 +1400,9 @@ class TextractSimulator {
     if (region) this.startInlineEditing(region);
   }
 
+  /**
+   * Direct In-Place Inline Text Editing with Floating Typography Formatting Bar
+   */
   getVisualFontSize(region) {
     if (!region || !region.box) return 14;
     const renderedHeight = this.canvas.clientHeight || 600;
@@ -757,6 +1410,8 @@ class TextractSimulator {
     const scaleY = renderedHeight / canvasH;
 
     const boxScreenHeight = region.box.h * scaleY;
+    
+    // Convert canvas font size to screen display pixels
     let screenFontSize;
     if (region.fontSize && region.fontSize > 0) {
       screenFontSize = region.fontSize * scaleY;
@@ -764,6 +1419,7 @@ class TextractSimulator {
       screenFontSize = boxScreenHeight * 0.85;
     }
 
+    // Ensure the font fits cleanly inside the box height without clipping
     const maxFittingSize = Math.max(9, boxScreenHeight * 0.88);
     screenFontSize = Math.min(screenFontSize, maxFittingSize);
 
@@ -786,6 +1442,7 @@ class TextractSimulator {
     this.inlineEditor.style.width = `${widthPct}%`;
     this.inlineEditor.style.height = `${heightPct}%`;
 
+    // Populate formatting toolbar controls
     const family = region.fontFamily || 'Montserrat';
     let optionExists = false;
     for (let i = 0; i < this.fontSelector.options.length; i++) {
@@ -835,6 +1492,7 @@ class TextractSimulator {
 
     this.btnToggleCase.classList.toggle('active', !!region.isUppercase);
 
+    // Style the in-place text input
     this.inlineInput.value = region.text;
     this.inlineInput.style.fontFamily = `"${family}", sans-serif`;
     this.inlineInput.style.fontSize = `${this.getVisualFontSize(region)}px`;
@@ -873,6 +1531,7 @@ class TextractSimulator {
     const ch = this.canvas.height;
     const box = this.selectedRegion.box;
 
+    // Update region model with final user choices
     this.selectedRegion.text = newText;
     this.selectedRegion.isEdited = true;
     this.selectedRegion.fontFamily = this.fontSelector.value;
@@ -891,58 +1550,82 @@ class TextractSimulator {
       this.selectedRegion.alignment = activeAlignBtn.getAttribute('data-align');
     }
 
-    let inpaintSuccess = false;
+    const isUploadedImage = this.textRegions.some(
+      r => r.id.startsWith('ocr_') || r.id.startsWith('cloud_') || r.id.startsWith('gemini_') || r.id.startsWith('custom_')
+    );
 
-    try {
-      const origCanvas = document.createElement('canvas');
-      origCanvas.width = cw;
-      origCanvas.height = ch;
-      const origCtx = origCanvas.getContext('2d');
-      if (this.cleanBackgroundData) {
-        origCtx.putImageData(this.cleanBackgroundData, 0, 0);
-      } else {
-        origCtx.drawImage(this.canvas, 0, 0);
+    if (isUploadedImage) {
+      // Inpaint target text area
+      let inpaintSuccess = false;
+
+      try {
+        const origCanvas = document.createElement('canvas');
+        origCanvas.width = cw;
+        origCanvas.height = ch;
+        const origCtx = origCanvas.getContext('2d');
+        if (this.cleanBackgroundData) {
+          origCtx.putImageData(this.cleanBackgroundData, 0, 0);
+        } else {
+          origCtx.drawImage(this.canvas, 0, 0);
+        }
+        
+        const inpaintBox = this.selectedRegion.originalBox || box;
+        const blob = await new Promise(resolve => origCanvas.toBlob(resolve, 'image/png'));
+        const formData = new FormData();
+        formData.append('file', blob, 'image.png');
+        formData.append('x', Math.floor(inpaintBox.x));
+        formData.append('y', Math.floor(inpaintBox.y));
+        formData.append('w', Math.ceil(inpaintBox.w));
+        formData.append('h', Math.ceil(inpaintBox.h));
+
+        const response = await fetch('http://localhost:8000/api/inpaint', {
+          method: 'POST',
+          body: formData
+        });
+
+        if (response.ok) {
+          const patchX = parseInt(response.headers.get('X-Patch-X'));
+          const patchY = parseInt(response.headers.get('X-Patch-Y'));
+          const patchBlob = await response.blob();
+          const patchImage = await createImageBitmap(patchBlob);
+          
+          this.ctx.drawImage(patchImage, patchX, patchY);
+          this.cleanBackgroundData = this.ctx.getImageData(0, 0, cw, ch);
+          inpaintSuccess = true;
+        }
+      } catch (err) {
+        console.warn('Backend inpainting unavailable, falling back to seamless client inpainter:', err);
       }
 
-      const inpaintBox = this.selectedRegion.originalBox || box;
-      const blob = await new Promise(resolve => origCanvas.toBlob(resolve, 'image/png'));
-      const formData = new FormData();
-      formData.append('file', blob, 'image.png');
-      formData.append('x', Math.floor(inpaintBox.x));
-      formData.append('y', Math.floor(inpaintBox.y));
-      formData.append('w', Math.ceil(inpaintBox.w));
-      formData.append('h', Math.ceil(inpaintBox.h));
-
-      const response = await fetch('http://127.0.0.1:8000/api/inpaint', {
-        method: 'POST',
-        body: formData
-      });
-
-      if (response.ok) {
-        const patchX = parseInt(response.headers.get('X-Patch-X'));
-        const patchY = parseInt(response.headers.get('X-Patch-Y'));
-        const patchBlob = await response.blob();
-        const patchImage = await createImageBitmap(patchBlob);
-
-        this.ctx.drawImage(patchImage, patchX, patchY);
+      // If backend inpainting failed or offline, use our seamless gradient client inpainter (NEVER a black box!)
+      if (!inpaintSuccess) {
+        const inpaintBox = this.selectedRegion.originalBox || box;
+        this.inpaintRegionClientSide(inpaintBox);
         this.cleanBackgroundData = this.ctx.getImageData(0, 0, cw, ch);
-        inpaintSuccess = true;
       }
-    } catch (err) {
-      console.warn('Backend inpainting fallback:', err);
-    }
 
-    if (!inpaintSuccess) {
-      const inpaintBox = this.selectedRegion.originalBox || box;
-      this.inpaintRegionClientSide(inpaintBox);
-      this.cleanBackgroundData = this.ctx.getImageData(0, 0, cw, ch);
-    }
+      // Re-render ONLY this region's text
+      this.renderSingleRegion(this.selectedRegion);
 
-    this.renderSingleRegion(this.selectedRegion);
+    } else {
+      // Template rendering: restore clean background and re-render
+      if (this.cleanBackgroundData) {
+        this.ctx.putImageData(this.cleanBackgroundData, 0, 0);
+      }
+
+      this.textRegions.forEach(r => {
+        if (r.bgColor && r.bgColor !== 'transparent') {
+          this.ctx.fillStyle = r.bgColor;
+          this.ctx.fillRect(r.box.x, r.box.y, r.box.w, r.box.h);
+        }
+        this.renderSingleRegion(r);
+      });
+    }
 
     const t1 = performance.now();
     document.getElementById('inpaint-latency').textContent = `~${Math.round(t1 - t0)} ms`;
 
+    // Push to undo stack
     this.undoStack.push({
       imageData: this.ctx.getImageData(0, 0, cw, ch),
       regions: JSON.parse(JSON.stringify(this.textRegions))
@@ -955,6 +1638,10 @@ class TextractSimulator {
     this.updateControlsState();
   }
 
+  /**
+   * Client-side seamless texture-preserving inpainter.
+   * Samples perimeter boundary pixels and synthesizes smooth background color.
+   */
   inpaintRegionClientSide(box) {
     const cw = this.canvas.width;
     const ch = this.canvas.height;
@@ -967,6 +1654,7 @@ class TextractSimulator {
     const imgData = this.ctx.getImageData(0, 0, cw, ch);
     const data = imgData.data;
 
+    // Sample boundary pixel colors
     let topR = 0, topG = 0, topB = 0, topCount = 0;
     let botR = 0, botG = 0, botB = 0, botCount = 0;
 
@@ -980,6 +1668,7 @@ class TextractSimulator {
     const avgTop = [topR / topCount, topG / topCount, topB / topCount];
     const avgBot = [botR / botCount, botG / botCount, botB / botCount];
 
+    // Create linear vertical gradient to seamlessly blend
     const grad = this.ctx.createLinearGradient(0, y1, 0, y2);
     grad.addColorStop(0, `rgb(${Math.round(avgTop[0])},${Math.round(avgTop[1])},${Math.round(avgTop[2])})`);
     grad.addColorStop(1, `rgb(${Math.round(avgBot[0])},${Math.round(avgBot[1])},${Math.round(avgBot[2])})`);
@@ -988,6 +1677,9 @@ class TextractSimulator {
     this.ctx.fillRect(x1, y1, x2 - x1, y2 - y1);
   }
 
+  /**
+   * Render a single text region with high typography fidelity and auto-fitting.
+   */
   renderSingleRegion(r) {
     const box = r.box;
     const family = r.fontFamily || 'Montserrat';
@@ -1015,15 +1707,19 @@ class TextractSimulator {
     this.ctx.fillStyle = r.textColor || '#FFFFFF';
     this.ctx.textBaseline = 'middle';
 
+    // Auto-fit text width perfectly to the bounding box
     let measured = this.ctx.measureText(textToRender).width;
     const targetWidth = box.w * 0.98;
-
+    
+    // Reset letterSpacing before doing anything
     this.ctx.letterSpacing = '0px';
 
     if (measured > targetWidth && measured > 0) {
+      // Downscale if too wide
       fontSize = Math.max(9, fontSize * (targetWidth / measured));
       this.ctx.font = `${fontStyle}${weight} ${fontSize}px "${family}", sans-serif`;
     } else if (measured < targetWidth && textToRender.length > 1 && !isVertical) {
+      // Upscale letter spacing if too narrow (mimics original wide-tracked fonts exactly)
       const extraSpace = targetWidth - measured;
       const spacingPerChar = extraSpace / textToRender.length;
       if (spacingPerChar > 0 && spacingPerChar < 25) {
@@ -1082,6 +1778,7 @@ class TextractSimulator {
       this.ctx.putImageData(this.originalBitmapData, 0, 0);
       this.undoStack = [this.undoStack[0]];
       this.redoStack = [];
+      // Reset each region to its original geometry and clear edit flag
       this.textRegions.forEach(r => {
         r.isEdited = false;
         if (r.originalBox) {
@@ -1153,10 +1850,12 @@ class TextractSimulator {
 
     const splitPercent = this.splitSliderPos * 100;
 
+    // Before canvas (ORIGINAL) on the left: show from 0% to splitPercent%
     const beforeClip = `polygon(0% 0%, ${splitPercent}% 0%, ${splitPercent}% 100%, 0% 100%)`;
     beforeCanvas.style.clipPath = beforeClip;
     beforeCanvas.style.webkitClipPath = beforeClip;
 
+    // After canvas (RECONSTRUCTED) on the right: show from splitPercent% to 100%
     if (afterCanvas) {
       const afterClip = `polygon(${splitPercent}% 0%, 100% 0%, 100% 100%, ${splitPercent}% 100%)`;
       afterCanvas.style.clipPath = afterClip;
@@ -1253,6 +1952,7 @@ class TextractSimulator {
     this.ctx.drawImage(video, 0, 0, this.canvas.width, this.canvas.height);
 
     this.closeCameraModal();
+    this.showCanvasWorkspace();
     await this.runRealOcrDetection();
     this.saveInitialState();
   }
@@ -1274,13 +1974,27 @@ class TextractSimulator {
   }
 
   updateControlsState() {
-    document.getElementById('btn-undo').disabled = this.undoStack.length <= 1;
-    document.getElementById('btn-redo').disabled = this.redoStack.length === 0;
-    document.getElementById('btn-export').disabled = this.textRegions.length === 0;
+    const hasDoc = !!this.hasDocument;
+    const btnUndo = document.getElementById('btn-undo');
+    if (btnUndo) btnUndo.disabled = !hasDoc || this.undoStack.length <= 1;
+    const btnRedo = document.getElementById('btn-redo');
+    if (btnRedo) btnRedo.disabled = !hasDoc || this.redoStack.length === 0;
+    const btnDraw = document.getElementById('btn-draw-mode');
+    if (btnDraw) btnDraw.disabled = !hasDoc;
+    const btnComp = document.getElementById('btn-compare');
+    if (btnComp) btnComp.disabled = !hasDoc;
+    const btnReset = document.getElementById('btn-reset-original');
+    if (btnReset) btnReset.disabled = !hasDoc;
+    const btnExport = document.getElementById('btn-export');
+    if (btnExport) btnExport.disabled = !hasDoc || this.textRegions.length === 0;
+    const btnZoomIn = document.getElementById('btn-zoom-in');
+    if (btnZoomIn) btnZoomIn.disabled = !hasDoc;
+    const btnZoomOut = document.getElementById('btn-zoom-out');
+    if (btnZoomOut) btnZoomOut.disabled = !hasDoc;
   }
 }
 
 window.addEventListener('DOMContentLoaded', () => {
   window.simulator = new TextractSimulator();
-  window.simulator.loadTemplate('aws_sample');
+  window.simulator.showUploadZone();
 });

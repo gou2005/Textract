@@ -542,7 +542,7 @@ Textract/
 │   ├── index.html                 # Main web UI, canvas workspace, floating toolbars & 8-way handles
 │   ├── app.js                     # Complete client controller, Canvas 2D engine & state management
 │   ├── style.css                  # Custom design system, typography popovers, split slider, resize handles
-│   └── demo_flyer.jpg             # Global AI Conference test flyer (built-in local demo preset)
+│   └── demo_flyer.jpg             # Global AI Conference test flyer (local demo asset, ignored in git)
 │
 ├── scripts/
 │   ├── generate_deck.py           # Standalone 16:9 iQOO Hackathon pitch deck generator (python-pptx)
