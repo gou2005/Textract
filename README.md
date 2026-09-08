@@ -1,7 +1,7 @@
 # Textract — Context-Preserving Document & Typography Editor ⚡
 
 > **Next-Generation Computer Vision Suite for Non-Destructive In-Place Document Text Editing, Deep Typography Profiling, and Glyph-Level Background Inpainting.**  
-> *Engineered with FastAPI, RapidOCR ONNX Runtime, OpenCV Telea/Navier-Stokes, and HTML5 Canvas.*
+> *Engineered for the iQOO Hackathon 2026 with FastAPI, RapidOCR ONNX Runtime, OpenCV Telea/Navier-Stokes, Google Gemini 2.5 Flash Vision, and HTML5 Canvas.*
 
 ---
 
@@ -18,8 +18,10 @@
 
 1. [Executive Summary & Vision](#-1-executive-summary--vision)
 2. [Problem Statement & Market Gap](#-2-problem-statement--market-gap)
-3. [The Solution: Textract](#-3-the-solution-snaptext-pro)
-4. [Complete Slide-by-Slide Pitch Deck Blueprint (AI PPT Ready)](#-4-complete-slide-by-slide-pitch-deck-blueprint-ai-ppt-ready)
+3. [The Solution: Textract](#-3-the-solution-textract)
+4. [iQOO Hackathon 2026 Pitch Deck & Presentation](#-4-iqoo-hackathon-2026-pitch-deck--presentation)
+   - [4.1 Slide-by-Slide Blueprint](#41-slide-by-slide-blueprint)
+   - [4.2 Generating the Presentation Deck (.pptx)](#42-generating-the-presentation-deck-pptx)
 5. [Core Architectural Pipeline](#-5-core-architectural-pipeline)
 6. [Deep Tech & Under-The-Hood Algorithms](#-6-deep-tech--under-the-hood-algorithms)
    - [6.1 Rapid OCR & Multimodal Cloud Vision](#61-rapid-ocr--multimodal-cloud-vision)
@@ -27,6 +29,7 @@
    - [6.3 Smart Glyph Inpainting & Background Preservation](#63-smart-glyph-inpainting--background-preservation)
    - [6.4 Dynamic Letter-Spacing & Baseline Fitting](#64-dynamic-letter-spacing--baseline-fitting)
    - [6.5 Spatial 8-Way Resizing & Move Transform Engine](#65-spatial-8-way-resizing--move-transform-engine)
+   - [6.6 Visual Viewport Font Scaling & In-Place Text Selection](#66-visual-viewport-font-scaling--in-place-text-selection)
 7. [Comprehensive Feature Matrix](#-7-comprehensive-feature-matrix)
 8. [Competitive Benchmark & Performance Metrics](#-8-competitive-benchmark--performance-metrics)
 9. [REST API Specification & Endpoints Reference](#-9-rest-api-specification--endpoints-reference)
@@ -34,6 +37,7 @@
 11. [Quickstart & Installation Guide](#-11-quickstart--installation-guide)
 12. [Enterprise Use Cases & Applications](#-12-enterprise-use-cases--applications)
 13. [Future Roadmap](#-13-future-roadmap)
+14. [License & Attribution](#-license--attribution)
 
 ---
 
@@ -103,22 +107,20 @@ Textract introduces a 4-pillar unified architecture:
 
 ---
 
-## 📊 4. Complete Slide-by-Slide Pitch Deck Blueprint (AI PPT Ready)
+## 📊 4. iQOO Hackathon 2026 Pitch Deck & Presentation
 
-*Use this dedicated section to instantly generate pitch decks, executive presentations, or investor summaries with AI presentation tools (Gamma, Beautiful.ai, Marp, ChatGPT, Claude, etc.).*
+This repository includes a standalone pitch deck generator (`scripts/generate_deck.py`) and a pre-compiled 16:9 widescreen presentation deck: [`Textract_iQOO_Hackathon_2026.pptx`](file:///Textract_iQOO_Hackathon_2026.pptx).
 
----
+### 4.1 Slide-by-Slide Blueprint
 
-### Slide 1: Title & Vision Hook
+#### Slide 1: Title & Vision Hook
 - **Slide Title:** Textract: Context-Preserving Document & Typography Editor
 - **Subtitle:** Seamless In-Place Text Editing on Flattened Images Without Touching Background Graphics
 - **Presenter / Team:** AI & Computer Vision Engineering Team
-- **Tagline:** "Don't recreate the document. Just edit the text."
+- **Tagline:** *"Don't recreate the document. Just edit the text."*
 - **Key Visuals:** Split graphic showing an intricate promotional poster: on the left, an outdated date and price; on the right, edited text seamlessly blended with identical fonts, colors, and textures.
 
----
-
-### Slide 2: The Core Problem: The Frustration of Flattened Images
+#### Slide 2: The Core Problem: The Frustration of Flattened Images
 - **Slide Title:** The Problem: Images Are Where Document Editing Goes to Die
 - **Key Talking Points:**
   - Billions of posters, menus, certificates, and marketing graphics exist only as flattened JPEGs or PNGs (no source PSD/Figma files).
@@ -129,9 +131,7 @@ Textract introduces a 4-pillar unified architecture:
   - **4.5 sec avg.** cloud generative AI latency vs. **40 ms** Textract real-time editing.
   - **100%** risk of cloud data exposure when uploading sensitive documents.
 
----
-
-### Slide 3: The Solution: Textract
+#### Slide 3: The Solution: Textract
 - **Slide Title:** The Solution: Intelligent, In-Place Document Synthesis
 - **Key Talking Points:**
   - **Click, Type, Done:** Direct in-canvas inline editing of any text on any image.
@@ -140,19 +140,14 @@ Textract introduces a 4-pillar unified architecture:
   - **Spatial Freedom:** Full 8-way directional box resizing and free dragging across the canvas.
 - **Visuals:** 3-step workflow diagram: (1) Auto-Detect → (2) Tap & Edit → (3) Pixel-Perfect Export.
 
----
-
-### Slide 4: System Architecture & Data Flow
+#### Slide 4: System Architecture & Data Flow
 - **Slide Title:** Architectural Pipeline: From Raw Pixels to Editable Vectors
 - **Key Talking Points:**
   - High-performance FastAPI backend paired with client-side HTML5 Canvas 2D engine.
   - Ultra-lean deployment: Runs locally on CPU/NPU with ONNX Runtime or connects to Google Gemini 2.5 Flash Vision for complex multimodal understanding.
   - Clean separation of concerns: Backend handles mathematical feature profiling and inpainting; frontend handles low-latency interactive typography rendering.
-- **Visuals:** End-to-end architecture diagram highlighting RapidOCR, OpenCV inpainting pipeline, and Canvas renderer.
 
----
-
-### Slide 5: Deep Technology: Typography Profiling Engine
+#### Slide 5: Deep Technology: Typography Profiling Engine
 - **Slide Title:** Proprietary Typography Engine: Beyond Basic OCR
 - **Key Talking Points:**
   - Standard OCR outputs only raw strings. Textract extracts **11 typography dimensions**:
@@ -161,11 +156,8 @@ Textract introduces a 4-pillar unified architecture:
     3. **Font Weight:** Euclidean Distance Transform computing stroke radius scaled against font height.
     4. **Italic Slant:** Probabilistic Hough Line Transform (`cv2.HoughLinesP`) measuring stroke tilt angle.
     5. **Google Font Matching:** Automated classification into Modern Sans (Inter, Montserrat), Display/Condensed (Oswald, Anton), or Monospace (JetBrains Mono).
-- **Visuals:** Diagram showing distance transform heatmap and Hough angle line overlay on a character glyph.
 
----
-
-### Slide 6: Deep Technology: Smart Glyph Inpainting
+#### Slide 6: Deep Technology: Smart Glyph Inpainting
 - **Slide Title:** Context-Preserving Erasure: Smart Glyph-Level Inpainting
 - **Key Talking Points:**
   - Why rectangle erasers fail: Rectangular cuts bleed across background gradients and erase decorative lines.
@@ -174,11 +166,8 @@ Textract introduces a 4-pillar unified architecture:
     - Applies morphological elliptical dilation (5x5 kernel) to encompass anti-aliased boundaries.
     - Runs OpenCV Telea Fast Marching Method inside a localized padded sub-crop.
     - Applies Gaussian feathered alpha blending for seamless border integration.
-- **Visuals:** Side-by-side comparison: Rectangular blurred eraser vs. Textract glyph inpainting showing flawless background preservation.
 
----
-
-### Slide 7: Interactive User Experience: 8-Way Resize & Move
+#### Slide 7: Interactive User Experience: 8-Way Resize & Move
 - **Slide Title:** Complete Spatial Control: 8-Direction Resizing & Move Transform
 - **Key Talking Points:**
   - **8 Directional Handles:** Top, Bottom, Left, Right, and all 4 corners for granular bounding box adjustment.
@@ -186,11 +175,8 @@ Textract introduces a 4-pillar unified architecture:
   - **Original Footprint Protection (`originalBox`):** Even if the user drags the text box across the canvas, the system erases *only* the original text location, keeping the new location pristine.
   - **In-Place Selection Look & Proportional Font Fitting:** Text inside the editing box matches the exact visual size of document text without clipping, distortion, or opaque card overlays.
   - **Dynamic Letter-Spacing:** Automatically expands letter spacing for wide-tracked headers or compresses font size to prevent text truncation.
-- **Visuals:** UI screenshot of the inline editor showing the 8 resize dots, the top move anchor, and live typography controls.
 
----
-
-### Slide 8: Enterprise Feature Suite
+#### Slide 8: Enterprise Feature Suite
 - **Slide Title:** Built for Productivity: Enterprise-Ready Capabilities
 - **Key Talking Points:**
   - **Before / After Split Comparison Slider:** Live interactive wipe to inspect pixel fidelity.
@@ -198,50 +184,52 @@ Textract introduces a 4-pillar unified architecture:
   - **Multi-Document Batch Replacement:** Find-and-replace text across multiple templates in seconds.
   - **Non-Destructive History:** Infinite multi-level Undo/Redo stack with instant original document reset.
   - **Camera & File Import:** Supports PNG, JPEG, WEBP, and live camera frame grab.
-- **Visuals:** 4-quadrant feature showcase grid (Split View, Batch Mode, Draw Box, Mobile Camera).
 
----
-
-### Slide 9: Performance Benchmarks & Competitive Matrix
+#### Slide 9: Performance Benchmarks & Competitive Matrix
 - **Slide Title:** Benchmarks: 100x Faster Than Cloud Generative AI
 - **Key Metrics Table:**
   - **Latency:** Textract (~40ms) vs. Cloud Generative Fill (4,500ms) vs. Manual Photoshop (180,000ms).
   - **Cost per Edit:** $0.00 (Local ONNX) vs. $0.03–$0.08 per cloud API call.
   - **Data Privacy:** 100% sealed on-device / zero network requirement.
   - **Artifacts:** 0% generative hallucination rate.
-- **Visuals:** Bar chart illustrating latency and memory footprint comparisons.
 
----
-
-### Slide 10: Real-World Business Use Cases
+#### Slide 10: Real-World Business Use Cases
 - **Slide Title:** Market Applications: High-Impact Vertical Solutions
 - **Use Cases:**
   1. **Retail & Hospitality:** Instant daily menu price updates and daily special flyer changes.
   2. **Events & Conferences:** Rapid certificate personalization and schedule updates without source PSDs.
   3. **Global Marketing & Localization:** Translate posters into local languages while preserving original brand fonts and layouts.
   4. **Financial Services & Legal:** Redact and update flattened invoices, receipts, and compliance forms locally.
-- **Visuals:** Industry icons (Retail, Hospitality, Corporate, Education) with corresponding before/after document mockups.
 
----
-
-### Slide 11: Privacy, Security & Edge Hardware Advantage
+#### Slide 11: Privacy, Security & Edge Hardware Advantage
 - **Slide Title:** Edge AI & Absolute Data Privacy
 - **Key Talking Points:**
   - **Zero Data Leaves the Device:** No mandatory external API calls, no cloud data retention, no telemetry.
   - **Hardware Agnostic:** Optimized for CPU, Intel/AMD iGPU, NVIDIA CUDA, and Qualcomm Snapdragon Hexagon NPU.
   - **Model Quantization:** INT8 ONNX models require only ~4.2 MB memory, making it ideal for edge devices and mobile apps.
-- **Visuals:** Security shield badge with "100% Offline · Zero Data Leaked · INT8 NPU Ready".
 
----
-
-### Slide 12: Roadmap & Conclusion
+#### Slide 12: Roadmap & Conclusion
 - **Slide Title:** The Future of Document Editing: What's Next
 - **Roadmap Milestones:**
   - **Q3 2026:** Native Android Jetpack Compose App with Snapdragon NPU offload.
   - **Q4 2026:** Multi-line text auto-reflow and curved/perspective text warping.
   - **Q1 2027:** Full multilingual font pairing with automated Google Fonts CDN streaming.
-- **Closing Call to Action:** "Empower your workflow with instant, context-preserving document text editing."
-- **Contact & Repository:** GitHub: `gou2005/Textract` · Open Source MIT License.
+- **Closing Call to Action:** *"Empower your workflow with instant, context-preserving document text editing."*
+
+---
+
+### 4.2 Generating the Presentation Deck (.pptx)
+
+You can regenerate the presentation slides at any time using the Python script:
+
+```bash
+# Ensure python-pptx is installed
+pip install python-pptx
+
+# Run the deck generator script
+python scripts/generate_deck.py
+```
+This produces `Textract_iQOO_Hackathon_2026.pptx` in the project root with the custom iQOO Hackathon dark navy and cyan `#90E6FC` theme.
 
 ---
 
@@ -310,7 +298,7 @@ Textract supports dual inference engines:
    - Latency: **15–28 ms** on standard CPU.
 2. **Google Gemini 2.5 Flash Vision (Cloud AI):**
    - Multimodal LLM vision inference for complex layouts, stylized handwritten script, low-contrast document scans, and multi-lingual scripts.
-   - Automatically falls back to local RapidOCR if offline or if no API key is configured.
+   - Seamlessly toggle between local ONNX and Gemini Vision from the settings UI.
 
 ### 6.2 Deep Typography Profiler
 Extracting raw text is insufficient for seamless editing. Textract’s `extract_typography()` function in `backend/app.py` extracts 11 typography attributes in under **3ms per patch**:
@@ -327,8 +315,8 @@ text_mask = (thresh == 0) if bg_is_bright else (thresh == 255)
 bg_mask = (thresh == 255) if bg_is_bright else (thresh == 0)
 
 # 3. Median Hex Colors (Immune to edge anti-aliasing)
-text_hex = rgb_to_hex(np.median(patch[text_mask], axis=0))
-bg_hex = rgb_to_hex(np.median(patch[bg_mask], axis=0))
+text_hex = f"#{int(text_bgr[2]):02x}{int(text_bgr[1]):02x}{int(text_bgr[0]):02x}"
+bg_hex = f"#{int(bg_bgr[2]):02x}{int(bg_bgr[1]):02x}{int(bg_bgr[0]):02x}"
 
 # 4. Stroke Width Transform via Euclidean Distance Transform
 dist = cv2.distanceTransform(text_mask.astype(np.uint8), cv2.DIST_L2, 3)
@@ -542,23 +530,34 @@ Content-Type: multipart/form-data
 ```
 Textract/
 ├── backend/
-│   ├── app.py                     # Core FastAPI server, RapidOCR pipeline, typography heuristics & inpainting
-│   ├── requirements.txt           # Python backend dependencies (FastAPI, OpenCV, RapidOCR, NumPy, Google-GenAI)
-│   └── .venv/                     # Python virtual environment (ignored in git)
+│   ├── app.py                     # FastAPI server, RapidOCR pipeline, typography heuristics & inpainting
+│   ├── requirements.txt           # Python backend dependencies (FastAPI, OpenCV, RapidOCR, NumPy, etc.)
+│   └── venv/                      # Local Python virtual environment (ignored in git)
 │
 ├── web-demo/
-│   ├── index.html                 # Main user interface, canvas containers, floating toolbar & 8-way resize handles
-│   ├── app.js                     # Complete client controller, Canvas 2D engine, event delegation & state manager
-│   ├── style.css                  # Custom design system, typography popovers, split sliders, resize handles
+│   ├── index.html                 # Main web UI, canvas workspace, floating toolbars & 8-way handles
+│   ├── app.js                     # Complete client controller, Canvas 2D engine & state management
+│   ├── style.css                  # Custom design system, typography popovers, split slider, resize handles
 │   └── sample_aws.png             # Official AWS Builder Center test benchmark flyer
 │
 ├── scripts/
-│   └── export_and_quantize_paddleocr.py  # INT8 ONNX quantization script for NPU/mobile deployments
+│   ├── generate_deck.py           # Generates the 16:9 iQOO Hackathon pitch deck (python-pptx)
+│   └── export_and_quantize_paddleocr.py  # INT8 ONNX quantization script for NPU/mobile deployment
 │
-├── ARCHITECTURE.md                # System architecture, tensor pipeline & non-destructive history specification
-├── SUBMISSION_PITCH.md            # Hackathon idea-screening submission, feature compliance matrix & red/green logistics
-├── .gitignore                     # Git exclusion rules (caches, environments, IDE files)
-└── README.md                      # Comprehensive documentation, technical guide & AI PPT Blueprint (this file)
+├── extracted_screenshots/         # Extracted visual slide previews and UI presentation assets
+│   ├── screenshot_1.jpeg          # Title slide preview
+│   ├── screenshot_2.jpeg          # Problem & stats preview
+│   ├── screenshot_3.jpeg          # Solution & workflow preview
+│   ├── screenshot_4.jpeg          # Architecture & dataflow preview
+│   ├── screenshot_5.jpeg          # Typography profiler & inpainting preview
+│   ├── screenshot_6.jpeg          # Competitive benchmarks preview
+│   └── screenshot_7.jpeg          # Enterprise use cases & roadmap preview
+│
+├── Textract_iQOO_Hackathon_2026.pptx # Pre-built 16:9 Widescreen Pitch Deck Presentation
+├── ARCHITECTURE.md                # Detailed system architecture, tensor pipeline & mobile engine spec
+├── SUBMISSION_PITCH.md            # Hackathon idea-screening submission & feature compliance matrix
+├── .gitignore                     # Git exclusion rules (caches, virtual environments, build files)
+└── README.md                      # Comprehensive documentation, technical guide & PPT blueprint
 ```
 
 ---
@@ -585,15 +584,15 @@ cd Textract
 cd backend
 
 # Create a virtual environment
-python -m venv .venv
+python -m venv venv
 
 # Activate the virtual environment
 # Windows (PowerShell):
-.\.venv\Scripts\Activate.ps1
+.\venv\Scripts\Activate.ps1
 # Windows (CMD):
-.\.venv\Scripts\activate.bat
+.\venv\Scripts\activate.bat
 # macOS / Linux:
-source .venv/bin/activate
+source venv/bin/activate
 
 # Install required dependencies
 pip install -r requirements.txt
@@ -625,6 +624,7 @@ python -m http.server 3000
 4. **Drag any of the 8 dots** to resize the box, or grab the **top move handle** to reposition the text.
 5. Type replacement text and hit **Enter** or click outside to commit the change.
 6. Toggle **↔ Before / After Split** to compare original vs. edited pixels.
+7. Click **💾 Save / Export Image** to download your high-resolution edited document.
 
 ---
 
@@ -651,6 +651,7 @@ python -m http.server 3000
 - [x] **Smart Glyph-Level Telea Inpainting with Alpha Feathering** (Shipped)
 - [x] **Dual RapidOCR ONNX + Gemini 2.5 Flash Vision Support** (Shipped)
 - [x] **Visual Viewport Font Auto-Fit & In-Place Selection Highlight** (Shipped)
+- [x] **iQOO Hackathon 2026 Presentation Deck Generator** (Shipped)
 - [ ] **Multi-Line Automatic Text Reflow:** Intelligent line wrapping for paragraph blocks.
 - [ ] **Perspective & Curved Text Warping:** Mesh-based font rendering for text along arcs and 3D angled surfaces.
 - [ ] **Native Mobile Android App:** Jetpack Compose frontend with Qualcomm Hexagon NPU hardware acceleration.
@@ -661,4 +662,4 @@ python -m http.server 3000
 ## 📄 License & Attribution
 
 This project is licensed under the **MIT License**.  
-Developed with pride for high-performance, context-preserving computer vision. Contributions and issues are warmly welcomed on [GitHub](https://github.com/gou2005/Textract)!
+Developed with pride for the **iQOO Hackathon 2026** for high-performance, context-preserving computer vision. Contributions and issues are warmly welcomed on [GitHub](https://github.com/gou2005/Textract)!
