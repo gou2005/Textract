@@ -38,7 +38,7 @@
       <aside class="panel left-panel">
         <div class="panel-card">
           <h2>📷 Document Input Source</h2>
-          <p class="section-desc">Import an image or capture via camera to test local OCR & background reconstruction.</p>
+          <p class="section-desc">Select an interactive template, import an image, or capture via camera to test local OCR & background reconstruction.</p>
 
           <div class="form-group">
             <label for="ocr-granularity-select">OCR DETECTION SENSITIVITY:</label>
@@ -136,7 +136,7 @@
             <button id="btn-draw-mode" class="btn btn-icon" title="Draw Box: Drag over any text to select & edit">
               <span id="draw-mode-text">✏️ Draw Box to Edit</span>
             </button>
-            <button id="btn-compare" class="btn btn-icon btn-toggle" title="Toggle Before/After Compare Split View">
+            <button id="btn-compare" class="btn btn-toggle" title="Toggle Before/After Compare Split View">
               <span id="compare-text">↔ Before / After Split</span>
             </button>
             <span class="divider"></span>
@@ -150,7 +150,7 @@
               <span id="zoom-level" class="zoom-text">100%</span>
               <button id="btn-zoom-in" class="btn-tool" title="Zoom In">+</button>
             </div>
-            <button id="btn-export" class="btn btn-icon" disabled>
+            <button id="btn-export" class="btn btn-accent" disabled>
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0;">
                 <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
                 <polyline points="17 21 17 13 7 13 7 21"></polyline>
@@ -250,7 +250,7 @@
               <div class="resize-handle handle-bl" data-dir="bl"></div>
               <div class="resize-handle handle-bc" data-dir="bc"></div>
               <div class="resize-handle handle-br" data-dir="br"></div>
-              
+
               <!-- Move handle -->
               <div class="move-handle" data-dir="move">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -263,7 +263,7 @@
                 </svg>
               </div>
             </div>
-            
+
             <!-- Scanning Laser Animation Overlay -->
             <div id="scanning-overlay" class="scanning-overlay hidden">
               <div class="scanning-laser"></div>
@@ -272,7 +272,7 @@
                 <span id="scanning-status-text">⚡ Running PP-OCRv5 Mobile Text Detection...</span>
               </div>
             </div>
-            
+
             <!-- Before/After Split View (Hidden by default) -->
             <div id="split-slider-container" class="split-slider-container hidden">
               <canvas id="split-before-canvas"></canvas>
@@ -298,7 +298,7 @@
       </div>
       <div class="modal-body">
         <p class="section-desc">Choose between high-speed RapidOCR ONNX inference or Google Gemini 2.5 Flash Vision (Cloud AI API).</p>
-        
+
         <div class="form-group">
           <label>Inference Engine:</label>
           <div class="engine-radio-list">
@@ -349,7 +349,7 @@
       </div>
       <div class="modal-body">
         <p class="section-desc">Apply identical find-and-replace rules across multiple images or templates without touching surrounding graphics.</p>
-        
+
         <div class="form-group">
           <label>Target Documents:</label>
           <div class="batch-doc-pills" id="batch-doc-list">
@@ -404,8 +404,6 @@
     </div>
   </div>
 
-  <!-- WebAssembly OCR Engine for 100% Offline Client Fallback -->
-  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
   <script src="app.js"></script>
 </body>
 </html>

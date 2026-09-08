@@ -95,9 +95,6 @@
   --shadow-yellow-lg: 0 8px 24px rgba(255, 206, 0, 0.42);
 }
 
-/* ==========================================================================
-   Base & Reset
-   ========================================================================== */
 * {
   box-sizing: border-box;
   margin: 0;
@@ -126,7 +123,6 @@ body {
   background: var(--bg-base);
 }
 
-/* Custom Sleek Scrollbars */
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;
@@ -145,9 +141,6 @@ body {
   background: #3e3e3e;
 }
 
-/* ==========================================================================
-   Header & Top Navigation
-   ========================================================================== */
 .header {
   background: #121212;
   border-bottom: 1px solid var(--border-subtle);
@@ -232,13 +225,6 @@ body {
   100% { transform: scale(0.9); opacity: 0.8; }
 }
 
-.m-stripe-divider {
-  display: none;
-}
-
-/* ==========================================================================
-   Workspace Layout (Sidebar + Viewer)
-   ========================================================================== */
 .workspace {
   display: grid;
   grid-template-columns: 375px 1fr;
@@ -247,9 +233,6 @@ body {
   background: var(--bg-base);
 }
 
-/* ==========================================================================
-   Left Controls Panel
-   ========================================================================== */
 .panel {
   background: #121212;
   border-right: 1px solid var(--border-subtle);
@@ -350,9 +333,6 @@ body {
   gap: 8px;
 }
 
-/* ==========================================================================
-   Buttons (Pill System with iQOO Yellow Primary)
-   ========================================================================== */
 .btn {
   font-family: var(--font-sans);
   font-weight: 700;
@@ -372,7 +352,6 @@ body {
   text-transform: uppercase;
 }
 
-/* button-primary: iQOO Yellow Pill with bold black text */
 .btn-primary {
   background: var(--iqoo-yellow);
   color: #000000;
@@ -398,7 +377,6 @@ body {
   cursor: not-allowed;
 }
 
-/* button-secondary: Dark Pill with subtle border */
 .btn-secondary {
   background: #1f1f1f;
   border: 1px solid var(--border-default);
@@ -425,54 +403,55 @@ body {
   border-radius: var(--radius-pill);
 }
 
-/* Toolbar buttons (btn-icon, btn-toggle, btn-accent) */
-.btn-icon, .btn-toggle, .btn-accent {
-  background: #2a2a2a;
-  border: 1px solid #444444;
+.btn-accent {
+  background: var(--iqoo-yellow);
+  color: #000000;
+  font-weight: 700;
+  box-shadow: var(--shadow-yellow-sm);
+}
+
+.btn-accent:hover:not(:disabled) {
+  background: var(--iqoo-yellow-hover);
+  box-shadow: var(--shadow-yellow-lg);
+  transform: scale(1.03);
+}
+
+.btn-accent:disabled, .btn-icon:disabled {
+  opacity: 0.4;
+  box-shadow: none;
+  transform: none;
+  cursor: not-allowed;
+}
+
+.btn-icon {
+  background: #1f1f1f;
+  border: 1px solid var(--border-subtle);
   color: var(--text-base);
   height: 38px;
-  padding: 6px 16px;
+  padding: 6px 14px;
   font-size: 12.5px;
   font-weight: 700;
   letter-spacing: 1.2px;
   text-transform: uppercase;
   border-radius: var(--radius-pill);
   transition: all 0.18s ease;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  cursor: pointer;
 }
 
-.btn-icon:hover:not(:disabled), .btn-toggle:hover:not(:disabled), .btn-accent:hover:not(:disabled) {
-  background: #383838;
-  border-color: #5a5a5a;
+.btn-icon:hover:not(:disabled) {
+  background: #2a2a2a;
+  border-color: var(--border-default);
   transform: scale(1.02);
-  color: #ffffff;
 }
 
-.btn-icon:active:not(:disabled), .btn-toggle:active:not(:disabled), .btn-accent:active:not(:disabled) {
-  background: #222222;
+.btn-icon:active:not(:disabled) {
   transform: scale(0.98);
 }
 
-.btn-icon:disabled, .btn-toggle:disabled, .btn-accent:disabled {
-  background: #242424;
-  border-color: #383838;
-  color: #666666;
-  opacity: 0.6;
-  cursor: not-allowed;
-  transform: none;
-  box-shadow: none;
-}
-
-.btn-icon.active, .btn-toggle.active {
-  background: #333333;
-  color: #38bdf8;
-  border-color: #38bdf8;
-  box-shadow: 0 0 12px rgba(56, 189, 248, 0.4);
+.btn-toggle.active {
+  background: var(--iqoo-yellow);
+  color: #000000;
+  border-color: var(--iqoo-yellow);
+  box-shadow: 0 0 14px var(--iqoo-yellow-glow);
 }
 
 .hidden-input {
@@ -484,9 +463,6 @@ body {
   text-align: center;
 }
 
-/* ==========================================================================
-   Metrics & Status List
-   ========================================================================== */
 .status-list {
   display: flex;
   flex-direction: column;
@@ -540,9 +516,6 @@ body {
   color: var(--iqoo-yellow);
 }
 
-/* ==========================================================================
-   Detected Regions List
-   ========================================================================== */
 .regions-list {
   display: flex;
   flex-direction: column;
@@ -599,9 +572,6 @@ body {
   text-align: center;
 }
 
-/* ==========================================================================
-   Viewer Section (Content-First Darkness)
-   ========================================================================== */
 .viewer-section {
   display: flex;
   flex-direction: column;
@@ -640,12 +610,10 @@ body {
 .zoom-controls {
   display: flex;
   align-items: center;
-  height: 38px;
-  background: #2a2a2a;
-  border: 1px solid #444444;
+  background: #1f1f1f;
+  border: 1px solid var(--border-subtle);
   border-radius: var(--radius-pill);
-  padding: 0 6px;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+  padding: 2px 6px;
 }
 
 .btn-tool {
@@ -665,8 +633,8 @@ body {
 }
 
 .btn-tool:hover {
-  background: #383838;
-  color: #ffffff;
+  background: #2a2a2a;
+  color: var(--iqoo-yellow);
 }
 
 .zoom-text {
@@ -676,7 +644,6 @@ body {
   padding: 0 8px;
 }
 
-/* Helper Hint Banner */
 .helper-hint {
   background: #181818;
   border: 1px solid var(--border-subtle);
@@ -702,7 +669,6 @@ body {
   color: var(--iqoo-yellow);
 }
 
-/* Canvas Area */
 .canvas-wrapper {
   flex: 1;
   display: flex;
@@ -780,7 +746,6 @@ body {
   z-index: 20;
 }
 
-/* Scanning Overlay */
 .scanning-overlay {
   position: absolute;
   top: 0;
@@ -839,9 +804,6 @@ body {
   animation: genericPulse 1s infinite;
 }
 
-/* ==========================================================================
-   Inline Canvas Text Editor & Floating Formatting Toolbar
-   ========================================================================== */
 .inline-text-editor {
   position: absolute;
   z-index: 90;
@@ -1003,9 +965,6 @@ body {
   background: #282828;
 }
 
-/* ==========================================================================
-   Inline Canvas Text Input & Bounding Handles
-   ========================================================================== */
 .inline-input-wrapper {
   position: relative;
   width: 100%;
@@ -1043,7 +1002,6 @@ body {
   color: #000000;
 }
 
-/* 8-Way Directional Resize Handles */
 .resize-handle {
   position: absolute;
   width: 8px;
@@ -1097,9 +1055,6 @@ body {
   cursor: grabbing;
 }
 
-/* ==========================================================================
-   Modals & Popovers
-   ========================================================================== */
 .modal-backdrop {
   position: fixed;
   top: 0;
@@ -1180,7 +1135,6 @@ body {
   padding-top: 14px;
 }
 
-/* Radio Group */
 .radio-group {
   display: flex;
   flex-direction: column;
@@ -1226,7 +1180,6 @@ body {
   color: var(--text-subdued);
 }
 
-/* Camera Video Container */
 .camera-video-container {
   width: 100%;
   height: 280px;
@@ -1243,14 +1196,13 @@ body {
   object-fit: cover;
 }
 
-/* Comparison Split View Slider */
 .split-slider-container {
   position: absolute;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  overflow: visible;
+  overflow: hidden;
   border-radius: inherit;
   pointer-events: auto;
   cursor: ew-resize;
@@ -1271,11 +1223,11 @@ body {
   position: absolute;
   top: 0;
   bottom: 0;
-  width: 3.5px;
-  background: #38bdf8;
+  width: 3px;
+  background: var(--iqoo-yellow);
   cursor: ew-resize;
   z-index: 70;
-  box-shadow: 0 0 16px rgba(56, 189, 248, 0.65), 0 0 6px rgba(56, 189, 248, 0.9);
+  box-shadow: 0 0 14px var(--iqoo-yellow-glow);
   transform: translateX(-50%);
 }
 
@@ -1286,7 +1238,7 @@ body {
   transform: translate(-50%, -50%);
   width: 32px;
   height: 32px;
-  background: #38bdf8;
+  background: var(--iqoo-yellow);
   color: #000000;
   border-radius: 50%;
   display: flex;
@@ -1294,34 +1246,35 @@ body {
   justify-content: center;
   font-size: 13px;
   font-weight: 700;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.7), 0 0 12px rgba(56, 189, 248, 0.5);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.7);
 }
 
 .split-tag {
   position: absolute;
-  top: -34px;
-  padding: 4px 14px;
-  background: #181818;
-  border: 1px solid #38bdf8;
+  top: 14px;
+  padding: 4px 12px;
+  background: rgba(18, 18, 18, 0.88);
+  border: 1px solid var(--border-subtle);
   border-radius: var(--radius-pill);
-  font-size: 11px;
+  font-size: 10.5px;
   font-weight: 700;
   letter-spacing: 1.2px;
-  color: #38bdf8;
+  color: var(--text-base);
   z-index: 65;
   pointer-events: none;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(8px);
 }
 
 .tag-before {
-  left: 2px;
+  left: 14px;
 }
 
 .tag-after {
-  right: 2px;
+  right: 14px;
+  color: var(--iqoo-yellow);
+  border-color: var(--iqoo-yellow);
 }
 
-/* Color Picker & Quick Swatches */
 .color-picker-label {
   display: flex;
   align-items: center;
@@ -1377,7 +1330,6 @@ body {
   text-align: center;
 }
 
-/* Batch Progress Bar */
 .progress-container {
   margin-top: 12px;
 }
@@ -1406,12 +1358,10 @@ body {
   font-family: var(--font-mono);
 }
 
-/* Utility Hidden */
 .hidden {
   display: none !important;
 }
 
-/* Toast Notifications */
 .toast-container {
   position: fixed;
   bottom: 24px;
@@ -1456,7 +1406,6 @@ body {
   100% { transform: scale(0.9); opacity: 0.7; }
 }
 
-/* Responsive adjustments */
 @media (max-width: 900px) {
   .workspace {
     grid-template-columns: 1fr;

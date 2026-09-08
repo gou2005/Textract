@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Textract</string>
+    <string name="title_editor">Textract Document Editor</string>
+    <string name="subtitle_editor">Context-Preserving Typography Engine</string>
+</resources>
